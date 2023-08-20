@@ -1,0 +1,6 @@
+- apt:
+    - zsh
+    - jq
+    - tree
+    - make
+    - vim

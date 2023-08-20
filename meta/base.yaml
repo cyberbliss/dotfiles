@@ -1,0 +1,10 @@
+- clean: ['~']
+
+- create:
+    - ~/.config
+    - ~/dev_work
+
+- defaults:
+    link:
+      relink: true
+      create: true
