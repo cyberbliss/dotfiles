@@ -5,3 +5,6 @@
 [submodule "meta/dotbot-apt"]
 	path = meta/dotbot-apt
 	url = https://github.com/bryant1410/dotbot-apt
+[submodule "meta/dotbot-sudo"]
+	path = meta/dotbot-sudo
+	url = https://github.com/DrDynamic/dotbot-sudo.git
