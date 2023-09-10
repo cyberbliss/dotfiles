@@ -1,17 +1,28 @@
 export TERM=xterm-256color
 # zsh customisation
 HISTFILE=$HOME/.zhistory
-HISTSIZE=100000
-SAVEHIST=$HISTSIZE
+SAVEHIST=100000
+HISTSIZE=$(( 1.2 * SAVEHIST ))
 setopt hist_ignore_all_dups # remove older duplicate entries from history
 setopt hist_reduce_blanks # remove superfluous blanks from history items
 setopt inc_append_history # save history entries as soon as they are entered
 setopt share_history # share history between different instances of the shell
 setopt hist_verify # don't execute immediately on history expansion
+setopt HIST_FCNTL_LOCK # Use modern file-locking mechanisms, for better safety & performance.
 
 setopt auto_cd # cd by typing directory name if it's not a command
 
-#setopt correct_all # autocorrect commands
+setopt NO_CLOBBER # Don't let > silently overwrite files. To overwrite, use >! instead.
+setopt INTERACTIVE_COMMENTS # Treat comments pasted into the command line as comments, not code.
+
+# Don't treat non-executable files in your $path as commands. This makes sure
+# they don't show up as command completions. Settinig this option can impact
+# performance on older systems, but should not be a problem on modern ones.
+setopt HASH_EXECUTABLES_ONLY
+
+# Sort numbers numerically, not lexicographically.
+setopt NUMERIC_GLOB_SORT
+
 unsetopt correct_all # disable autocorrect - its too annoying
 
 setopt auto_list # automatically list choices on ambiguous completion
@@ -21,16 +32,32 @@ setopt always_to_end # move cursor to end if word had one match
 export CLICOLOR=1;
 . ~/.dir_colours
 
+# Info on zstyle: https://thevaluable.dev/zsh-completion-guide-examples/
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
+export XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
+
 autoload -Uz compinit
 compinit
 
+# Use the cache
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
+
 zstyle ':completion:*' menu select # select completions with arrow keys
 zstyle ':completion:*' group-name '' # group results by category
-zstyle ':completion:::::' completer _expand _complete _ignored _approximate # enable approximate matches for completion
-#zstyle ':completion:*' format '%B---- %d%b'
+zstyle ':completion:*' completer _extensions _expand _complete _ignored _approximate # enable approximate matches for completion
+
+zstyle ':completion:*:*:*:*:descriptions' format '%F{green}-- %d --%f'
+zstyle ':completion:*:*:*:*:corrections' format '%F{yellow}!- %d (errors: %e) -!%f'
+zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
+zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+
 zstyle ':completion:*:*:kubectl:*' list-grouped true
-#zstyle ':completion:*:*' list-colors '=*=31'
-zstyle ':completion:*' list-colors 'exfxcxdxbxegedabagacad'
+
+# Colors for files and directory
+zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
 
 alias l='ls -lah --color=auto --group-directories-first'
 alias c='clear'
@@ -101,5 +128,19 @@ function parse_git_dirty {
 		echo ""
 	fi
 }
+
+# get current k8s context
+function get_k8s_context {
+	if test -f ""; then
+		ctx=$(cat ~/.kube/config | grep "current-context:" | sed "s/current-context: //")
+
+    	if [ -n "$ctx" ]; then
+        	echo " (k8s: ${ctx})"
+    	fi
+	else
+		echo ""
+	fi
+}
+
 NEWLINE=$'\n'
-PROMPT='%F{220}%n@%m:%F{033} %~ %F{208}$(parse_git_branch) %F{red}%(?..<%?>)%f${NEWLINE}$ '
+PROMPT='%F{220}%n@%m:%F{033} %~ %F{208}$(parse_git_branch) %F{green}$(get_k8s_context) %F{red}%(?..<%?>)%f${NEWLINE}$ '
