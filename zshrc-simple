@@ -131,11 +131,11 @@ function parse_git_dirty {
 
 # get current k8s context
 function get_k8s_context {
-	if test -f ""; then
+	if test -f "$HOME/.kube/config"; then
 		ctx=$(cat ~/.kube/config | grep "current-context:" | sed "s/current-context: //")
 
     	if [ -n "$ctx" ]; then
-        	echo " (k8s: ${ctx})"
+        	echo "(k8s: ${ctx})"
     	fi
 	else
 		echo ""
