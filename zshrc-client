@@ -1,0 +1,125 @@
+export TERM=xterm-256color
+# zsh customisation
+HISTFILE=$HOME/.zhistory
+SAVEHIST=100000
+HISTSIZE=$(( 1.2 * SAVEHIST ))
+setopt hist_ignore_all_dups # remove older duplicate entries from history
+setopt hist_reduce_blanks # remove superfluous blanks from history items
+setopt inc_append_history # save history entries as soon as they are entered
+setopt share_history # share history between different instances of the shell
+setopt hist_verify # don't execute immediately on history expansion
+setopt HIST_FCNTL_LOCK # Use modern file-locking mechanisms, for better safety & performance.
+
+setopt auto_cd # cd by typing directory name if it's not a command
+
+setopt NO_CLOBBER # Don't let > silently overwrite files. To overwrite, use >! instead.
+setopt INTERACTIVE_COMMENTS # Treat comments pasted into the command line as comments, not code.
+
+# Don't treat non-executable files in your $path as commands. This makes sure
+# they don't show up as command completions. Settinig this option can impact
+# performance on older systems, but should not be a problem on modern ones.
+setopt HASH_EXECUTABLES_ONLY
+
+# Sort numbers numerically, not lexicographically.
+setopt NUMERIC_GLOB_SORT
+
+#setopt correct_all # autocorrect commands
+unsetopt correct_all # disable autocorrect - its too annoying
+
+setopt auto_list # automatically list choices on ambiguous completion
+setopt auto_menu # automatically use menu completion
+setopt always_to_end # move cursor to end if word had one match
+
+export CLICOLOR=1;
+. ~/.dir_colours
+
+# Info on zstyle: https://thevaluable.dev/zsh-completion-guide-examples/
+
+export XDG_CONFIG_HOME="$HOME/.config"
+export XDG_DATA_HOME="$XDG_CONFIG_HOME/local/share"
+export XDG_CACHE_HOME="$XDG_CONFIG_HOME/cache"
+
+autoload -Uz compinit
+compinit
+
+# Use the cache
+zstyle ':completion:*' use-cache on
+zstyle ':completion:*' cache-path "$XDG_CACHE_HOME/zsh/.zcompcache"
+
+zstyle ':completion:*' menu select # select completions with arrow keys
+zstyle ':completion:*' group-name '' # group results by category
+zstyle ':completion:*' completer _extensions _expand _complete _ignored _approximate # enable approximate matches for completion
+
+zstyle ':completion:*:*:*:*:descriptions' format '%F{green}-- %d --%f'
+zstyle ':completion:*:*:*:*:corrections' format '%F{yellow}!- %d (errors: %e) -!%f'
+zstyle ':completion:*:messages' format ' %F{purple} -- %d --%f'
+zstyle ':completion:*:warnings' format ' %F{red}-- no matches found --%f'
+
+zstyle ':completion:*:*:kubectl:*' list-grouped true
+
+# Colors for files and directory
+zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
+
+# Customize to your needs...
+alias l='gls -lah --color=auto --group-directories-first'
+alias c='clear'
+
+export USE_GKE_GCLOUD_AUTH_PLUGIN=True
+
+# History tweaks
+alias h='history -i -200 -1'
+function hs
+{
+    history -i 1 | grep $*
+}
+
+# hsi for searching through your history
+alias hsi='hs -i'
+
+alias diff='colordiff'
+
+# Use dots to navigate up dirs
+alias ..="cd .."
+alias ...="cd ../.."
+alias ....="cd ../../.."
+alias .....="cd ../../../.."
+alias ......="cd ../../../../.."
+
+# tmux aliases
+# Attaches tmux to the last session; creates a new session if none exists.
+alias t='tmux attach || tmux new-session'
+
+# Attaches tmux to a session (example: ta portal)
+alias ta='tmux attach -t'
+
+# Creates a new session
+alias tn='tmux new-session'
+
+# Lists all ongoing sessions
+alias tl='tmux list-sessions'
+
+# Python stuff
+# Stop Python from creating cached files
+export PYTHONDONTWRITEBYTECODE=True
+export CLOUDSDK_PYTHON_SITEPACKAGES=1
+
+# Various Kubernetes functions and alias
+alias kctx='kubectx'
+alias kc='kubectl'
+#alias pkc="HTTPS_PROXY=localhost:8888 kubectl"
+alias kns='kubens'
+#alias pkns='HTTPS_PROXY=localhost:8888 kubens'
+#alias ph='HTTPS_PROXY=localhost:8888 helm'
+alias dry='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock moncho/dry'
+
+export PATH="${PATH}:${HOME}/.krew/bin"
+
+# Run antidote (https://getantidote.github.io/)
+source $(brew --prefix)/opt/antidote/share/antidote/antidote.zsh
+antidote load
+
+# The next line updates PATH for the Google Cloud SDK.
+if [ -f '/Users/stephen.judd/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/stephen.judd/google-cloud-sdk/path.zsh.inc'; fi
+
+# The next line enables shell command completion for gcloud.
+if [ -f '/Users/stephen.judd/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/stephen.judd/google-cloud-sdk/completion.zsh.inc'; fi

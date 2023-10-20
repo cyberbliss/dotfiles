@@ -8,3 +8,6 @@
 [submodule "meta/dotbot-sudo"]
 	path = meta/dotbot-sudo
 	url = https://github.com/DrDynamic/dotbot-sudo.git
+[submodule "meta/dotbot-brew"]
+	path = meta/dotbot-brew
+	url = https://github.com/d12frosted/dotbot-brew.git
