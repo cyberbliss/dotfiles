@@ -1,10 +1,24 @@
 # Dotfile repo
 
-Contains my profiles for installing and configuring Linux instances.  
+Contains my profiles for installing and configuring Linux & Mac instances.  
 Based on this series of blog posts: <https://haseebmajid.dev/posts/2022-10-15-how-to-manage-your-dotfiles-with-dotbot/>
 
 ## Usage
-`./install-profile <profile>`
+`make install profile="<profile from meta/profiles>"`
+
+### Mac profiles
+Install brew before running dotbot:  
+`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+
+If you get a permissions error try this:
+
+```
+sudo chown -R $(whoami) $(brew --prefix)/*
+/usr/local/bin/brew update --force --quiet
+brew doctor
+```
+
+`gcloud` is installed as part of Brewfile, but it is not initialised. To do this, ensure you have already authenticated with your GCP account and execute `gcloud init`. The installation is minimal, use `gcloud components list` to see what components are installed.
 
 ## TODO
 

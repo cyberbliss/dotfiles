@@ -1,2 +1,4 @@
-- brew:
-    - antidote
+- link:
+    ~/Brewfile: Brewfile
+- brewfile:
+    - Brewfile
