@@ -80,6 +80,14 @@ alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias ......="cd ../../../../.."
 
+# apt aliases
+alias aptupd='sudo apt update'
+alias aptupg='sudo apt update & sudo apt full-upgrade -V'
+alias aptinst='sudo apt install -V'
+alias chkup='/usr/lib/update-notifier/apt-check -p --human-readable'
+alias chkboot='cat /var/run/reboot-required'
+alias apts='apt search'
+
 # Prompt
 setopt PROMPT_SUBST
 # get current branch in git repo
