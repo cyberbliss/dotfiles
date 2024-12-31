@@ -4,4 +4,8 @@
     - command: NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       stdout: true
       stderr: true
-
+- shell:
+    - command: echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $HOME/.zshrc
+      stdout: true
+      stderr: true      
+     

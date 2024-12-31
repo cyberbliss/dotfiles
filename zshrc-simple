@@ -152,3 +152,5 @@ function get_k8s_context {
 
 NEWLINE=$'\n'
 PROMPT='%F{220}%n@%m:%F{033} %~ %F{208}$(parse_git_branch) %F{green}$(get_k8s_context) %F{red}%(?..<%?>)%f${NEWLINE}$ '
+
+
