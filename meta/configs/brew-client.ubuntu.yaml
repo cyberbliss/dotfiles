@@ -8,4 +8,8 @@
     - command: echo 'eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"' >> $HOME/.zshrc
       stdout: true
       stderr: true      
+- shell:
+    - command: /home/linuxbrew/.linuxbrew/bin/brew bundle -v --file ~/Brewfile
+      stdout: true
+      stderr: true
      

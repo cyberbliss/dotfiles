@@ -1,4 +1,5 @@
 git
 packages.ubuntu-sudo
-zsh-simple
+zsh-client
 brew-client.ubuntu
+chsh-zsh
