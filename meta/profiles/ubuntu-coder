@@ -1,5 +1,8 @@
 git
 packages.ubuntu-sudo
+gcloud.ubuntu-sudo
 zsh-client
+install-docker.ubuntu-sudo
 brew-client.ubuntu
 chsh-zsh
+tmux-config.ubuntu

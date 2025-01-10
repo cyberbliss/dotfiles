@@ -14,7 +14,7 @@
           "trailing_diamond": "\ue0b0",
           "template": " {{ if .SSHSession }}\ueba9 {{ .UserName }}{{else}}{{ .UserName }}@{{ .HostName }}{{ end }} ",
           "foreground": "#010200",
-          "background": "#ebcc34",
+          "background": "#3deb34",
           "type": "session",
           "style": "diamond"
         },
@@ -131,7 +131,7 @@
             "cache_duration": "none"
           },
           "template": "\u2570\u2500",
-          "foreground": "#f7d200",
+          "foreground": "#3deb34",
           "type": "text",
           "style": "plain"
         },
