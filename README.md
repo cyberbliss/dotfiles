@@ -25,6 +25,8 @@ Use this one for the Linux VM spun up by Coder: `make install profile="ubuntu-co
 
 Installs: the basics using `apt`, Homebrew and sets the default shell to `zsh`. Once complete log out and back in again and then: `brew bundle -v`
 
+Tmux is also installed and configured. ESC is the prefix key. Copy and paste between local tmux and VM tmux is enabled as long as iterm2 is used AND local tmux `set-clipboard` is set to on.
+
 ## TODO
 
 - https://haseebmajid.dev/posts/2022-12-15-how-to-use-dotbot-to-personalise-your-vscode-devcontainers/
