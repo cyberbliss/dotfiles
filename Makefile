@@ -8,5 +8,9 @@ help: ## Generates a help README
 
 # prompt_example> make install profile="ubuntu"
 .PHONY: install
-install: ## Run dotbot install script
+install: ## Run dotbot install script, e.g. make install profile="ubuntu-coder"
 	./install-profile $(profile)
+
+.PHONY: profiles
+profiles: ## List available profiles
+	 @ls -1 ./meta/profiles

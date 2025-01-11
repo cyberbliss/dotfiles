@@ -13,3 +13,6 @@
     - make
     - vim
     - gh
+    - build-essential
+    - gcc
+    - coreutils

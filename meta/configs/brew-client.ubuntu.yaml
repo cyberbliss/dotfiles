@@ -1,0 +1,12 @@
+- link:
+    ~/Brewfile: Brewfile-ubuntu
+- shell:
+    - command: NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      stdout: true
+      stderr: true
+    
+- shell:
+    - command: /home/linuxbrew/.linuxbrew/bin/brew bundle -v --file ~/Brewfile
+      stdout: true
+      stderr: true
+     
