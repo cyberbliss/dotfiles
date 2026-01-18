@@ -1,0 +1,10 @@
+- apt:
+    - zsh
+    - jq
+    - tree
+    - make
+    - vim
+    - gh
+    - build-essential
+    - gcc
+    - coreutils
