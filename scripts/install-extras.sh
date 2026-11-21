@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# install-extras.sh [machine] [--with <stack,...>] [--list]
+# install-extras.sh [machine] [--with <stack,...>] [--list] [--no-font]
 #
 # Installs OPTIONAL stacks that are intentionally kept out of the chezmoi
 # baseline (home/run_onchange_install-packages.sh.tmpl). The intended flow is
@@ -12,7 +12,8 @@
 #   gcloud  Google Cloud CLI (Google apt repo; run `gcloud init` afterwards)
 #   docker  Docker Engine + compose/buildx (Docker apt repo; enables services)
 #   mise    Language/runtime tools listed in packages/mise.txt (via mise)
-#   prompt  oh-my-posh + antidote + Nerd Font for the zsh prompt (no Homebrew)
+#   prompt  oh-my-posh + antidote + Nerd Font for the zsh prompt (no Homebrew);
+#           the font is skipped if one is already present, or with --no-font
 #
 # Safe to re-run: every step is idempotent. With no --with and an interactive
 # terminal it prompts for each stack; otherwise it prints what is available.
@@ -30,6 +31,22 @@ STACKS=(gcloud docker mise prompt)
 log()  { printf '==> %s\n' "$*"; }
 warn() { printf '  ! %s\n' "$*" >&2; }
 
+# nerd_font_present: true if any Nerd Font is already installed locally. Matches
+# both the "Nerd Font" family naming and font files with "nerd"/"nerdfont" in the
+# name. NOTE: on ChromeOS Crostini the *terminal* font is configured on the host,
+# which this container cannot see -- pass --no-font if your terminal already
+# renders glyphs.
+nerd_font_present() {
+  if command -v fc-list >/dev/null 2>&1 && fc-list 2>/dev/null | grep -qiE 'nerd ?font'; then
+    return 0
+  fi
+  if find "$HOME/.local/share/fonts" "$HOME/.fonts" /usr/local/share/fonts \
+       -iname '*nerd*' -print -quit 2>/dev/null | grep -q .; then
+    return 0
+  fi
+  return 1
+}
+
 # apt_codename: prefer the Ubuntu base codename, because Linux Mint sets
 # VERSION_CODENAME to the Mint release name (e.g. "wilma") while third-party apt
 # repos (docker, etc.) key on the Ubuntu base (e.g. "noble").
@@ -41,7 +58,7 @@ apt_codename() {
 }
 
 usage() {
-  printf 'usage: %s [machine] [--with <%s>] [--list]\n' \
+  printf 'usage: %s [machine] [--with <%s>] [--list] [--no-font]\n' \
     "$(basename "$0")" "$(IFS=,; printf '%s' "${STACKS[*]}")"
 }
 
@@ -153,20 +170,25 @@ do_prompt() {
     log "antidote already present"
   fi
   # A Nerd Font is needed for the oh-my-posh prompt glyphs.
-  if ! fc-list 2>/dev/null | grep -qi "Hack Nerd Font"; then
+  if nerd_font_present; then
+    log "A Nerd Font is already installed (skipping font install)"
+  elif ((NO_FONT)); then
+    warn "skipping Nerd Font install (--no-font); ensure your terminal has one"
+  else
     log "Installing Hack Nerd Font -> ${fonts} (glyphs for oh-my-posh)"
     mkdir -p "$fonts"
-    local base="https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/Hack" ok=1 spec dir file
-    for spec in Regular/HackNerdFont-Regular.ttf Bold/HackNerdFont-Bold.ttf Italic/HackNerdFont-Italic.ttf; do
-      dir="${spec%%/*}"; file="${spec##*/}"
-      curl -fsSL -o "${fonts}/${file}" "${base}/${dir}/${file}" || ok=0
-    done
-    ((ok)) || warn "font download failed; install a Nerd Font in your terminal manually"
-    command -v fc-cache >/dev/null 2>&1 && fc-cache -f "$fonts" >/dev/null 2>&1
-  else
-    log "Nerd Font already present"
+    local zip; zip="$(mktemp)"
+    if curl -fsSL -o "$zip" "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/Hack.zip" \
+       && command -v unzip >/dev/null 2>&1; then
+      unzip -o -q "$zip" -d "$fonts"
+      rm -f "$zip"
+      command -v fc-cache >/dev/null 2>&1 && fc-cache -f "$fonts" >/dev/null 2>&1
+    else
+      rm -f "$zip"
+      warn "font download/unzip failed; install a Nerd Font in your terminal manually"
+    fi
   fi
-  warn "installed oh-my-posh + antidote + Nerd Font under ~/ (no Homebrew needed)."
+  warn "oh-my-posh + antidote are installed under ~/ (no Homebrew needed)."
   warn "Now enable the module: scripts/zsh-configure.sh --prompt omp --features plugins"
 }
 
@@ -180,11 +202,12 @@ run_stack() {
   esac
 }
 
-WITH=""; MACHINE=""
+WITH=""; MACHINE=""; NO_FONT=0
 while (($#)); do
   case "$1" in
     --list) printf '%s\n' "${STACKS[@]}"; exit 0 ;;
     --with) WITH="${2:-}"; shift 2 ;;
+    --no-font) NO_FONT=1; shift ;;
     -h|--help) usage; exit 0 ;;
     --*) warn "unknown option '$1'"; usage; exit 2 ;;
     *) MACHINE="$1"; shift ;;
