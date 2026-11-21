@@ -50,5 +50,36 @@ Last verified: 2026-11-21 on branch `agent-harness`.
 - `gcloud init` (GCP auth).
 - SSH key generation/authorisation for GitHub.
 
+## Doctor checks
+Consumed by `scripts/doctor.sh <machine>`. `require_*` lines are gating
+(non-zero exit on failure); `warn_*` lines are reported but do not fail the run.
+Promote `warn_*` to `require_*` as later stages land.
+
+```doctor
+require_os trixie
+require_arch arm64
+require_cmd git
+require_cmd curl
+require_cmd gh
+require_cmd chezmoi
+require_cmd mise
+require_cmd shellcheck
+require_cmd zsh
+require_shell zsh
+require_git_identity
+require_file ~/.profile
+require_file ~/.bashrc
+require_file ~/.bash_logout
+require_file ~/.gitconfig
+require_file ~/.zshrc
+require_file ~/.dir_colours
+warn_cmd tmux
+warn_file ~/.tmux.conf
+warn_tmux_clipboard ~/.tmux.conf
+warn_cmd gcloud
+warn_cmd docker
+warn_pkg docker-ce
+```
+
 ## Verification
 - `scripts/doctor.sh chromebook` must exit 0.
