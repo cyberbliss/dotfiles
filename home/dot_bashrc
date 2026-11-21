@@ -115,3 +115,8 @@ if ! shopt -oq posix; then
     . /etc/bash_completion
   fi
 fi
+
+# set PATH so it includes the OpenCode binary (installed by scripts/prereqs.sh)
+if [ -d "$HOME/.opencode/bin" ] ; then
+    PATH="$HOME/.opencode/bin:$PATH"
+fi

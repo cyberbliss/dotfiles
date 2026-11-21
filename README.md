@@ -3,40 +3,45 @@
 Managed with **chezmoi** (source in `home/`) and driven by an agent — see
 `AGENTS.md` and `machines/<name>.md`. Previously managed with Dotbot, now retired.
 
-## Pre-requisites
+## Getting started
 
-An agent (see `AGENTS.md`) drives this repo, so **install OpenCode first** — the
-agent skill and automation depend on it:
-
-```bash
-# Linux (Debian / ChromeOS Crostini, arm64) — installs to ~/.opencode/bin
-curl -fsSL https://opencode.ai/v2/install | bash
-
-# macOS
-brew install anomalyco/tap/opencode-v2
-```
-
-The curl installer drops the binary in `~/.opencode/bin`, which is **not** on
-`PATH` by default (and is not added by `~/.profile`). Add it, or call the binary
-by absolute path:
-
-```bash
-export PATH="$HOME/.opencode/bin:$PATH"
-```
-
-Other installers (npm, bun, pnpm, mise) and standalone binaries are listed at
-<https://opencode.ai/docs/>. A working `git` and `curl` are assumed.
-
-## Bootstrap a machine
+`git` is the only prerequisite. Clone, run the prereqs script, then start the
+agent:
 
 ```bash
 git clone https://github.com/cyberbliss/dotfiles.git ~/dev_work/dotfiles
-~/dev_work/dotfiles/scripts/bootstrap.sh
+~/dev_work/dotfiles/scripts/prereqs.sh     # installs OpenCode + prints OpenRouter setup
+cd ~/dev_work/dotfiles && opencode         # the agent follows AGENTS.md
 ```
 
-`bootstrap.sh` installs base tooling plus `chezmoi`/`mise`, then hands off to an
-agent. The agent follows `AGENTS.md`: `chezmoi apply` (managed config + baseline
-packages), **asks** which optional stacks you want, then runs `doctor.sh`.
+`scripts/prereqs.sh` installs OpenCode into `~/.opencode/bin`, adds it to your
+shell PATH (now and for future shells), and prints getting-started instructions.
+Everything after that is agent-driven: `chezmoi apply` (managed config + baseline
+packages), choose any optional stacks, then `scripts/doctor.sh <machine>`.
+
+## OpenCode setup (reference)
+
+OpenCode is the agent that drives this repo; configure it once with an
+OpenRouter API key.
+
+```bash
+# Install (scripts/prereqs.sh does this for you)
+curl -fsSL https://opencode.ai/v2/install | bash     # Linux
+brew install anomalyco/tap/opencode-v2               # macOS
+export PATH="$HOME/.opencode/bin:$PATH"              # if not already on PATH
+```
+
+1. Create an OpenRouter key: <https://openrouter.ai/keys>
+2. Connect it (pick one):
+
+```bash
+opencode                                        # TUI: /connect -> OpenRouter, then /models
+opencode auth login openrouter --method key     # CLI: save the key as an account
+opencode service set env OPENROUTER_API_KEY sk-or-...   # shared background service
+```
+
+Then choose a model, e.g. `openrouter/anthropic/claude-sonnet-5.5`. Other
+installers (npm, bun, pnpm, mise) are listed at <https://opencode.ai/docs/>.
 
 ## Common tasks
 

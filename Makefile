@@ -6,6 +6,10 @@ CHEZMOI ?= $(shell command -v chezmoi 2>/dev/null || echo $$HOME/.local/bin/chez
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
+.PHONY: prereqs
+prereqs: ## Install OpenCode + put it on PATH (run this first)
+	./scripts/prereqs.sh
+
 .PHONY: bootstrap
 bootstrap: ## Bootstrap a fresh machine (toolchain + clone), then hand off to an agent
 	./scripts/bootstrap.sh

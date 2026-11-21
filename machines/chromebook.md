@@ -55,6 +55,8 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   manual `gcloud init` step.
 - **PATH:** `~/.local/bin` (chezmoi, mise) is added by `~/.profile` for login
   shells only. Non-login agent shells must reference these by absolute path.
+  `~/.opencode/bin` (OpenCode) is added to `~/.profile`, `~/.bashrc` and the zsh
+  config by `scripts/prereqs.sh` and the managed shell files.
 - **No X11 display server:** terminal-only tooling; avoid GUI/clipboard utilities
   that assume X.
 - **Dotbot could not overwrite existing regular files:** the legacy `bash.yaml`

@@ -13,6 +13,7 @@ there are no separate agent-specific rule files.
 | `.chezmoiroot` | Points chezmoi at `home/` as the source root. |
 | `home/.chezmoi.toml.tmpl` | Generates `~/.config/chezmoi/chezmoi.toml` (`machine`, `zshVariant`). |
 | `packages/` | Package lists: `common.txt`, `debian.txt` (baseline), `mise.txt` (optional runtimes). |
+| `scripts/prereqs.sh` | User runs first: installs OpenCode + PATH + OpenRouter instructions. |
 | `scripts/bootstrap.sh` | Fresh-machine bootstrap (git → clone → chezmoi/mise → hand off). |
 | `scripts/install-extras.sh` | Optional stacks (gcloud/docker/mise/prompt); the agent asks first. |
 | `scripts/doctor.sh <machine>` | Verification. Non-zero exit on any failure. |
