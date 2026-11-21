@@ -13,8 +13,8 @@
 targetType = "lite"
 
 [machines.chromebook.zsh]
-prompt = "basic"
-features = []
+prompt = "omp"
+features = ["plugins"]
 
 [machines.mint]
 targetType = "fullfat"

@@ -53,9 +53,15 @@ while (($#)); do
     --list)     printf 'target: %s (default %s)\n' "$current_target" "$default_target"
                 printf 'prompt: basic|omp\nfeatures: %s\n' "$(IFS=,; printf '%s' "${ALL_FEATURES[*]}")"; exit 0 ;;
     -h|--help)  sed -n '2,24p' "$0"; exit 0 ;;
-    *) printf 'zsh-configure: unknown option %s\n' "$1" >&2; exit 2 ;;
+    -*) printf 'zsh-configure: unknown option %s\n' "$1" >&2; exit 2 ;;
+    *)  machine_arg="$1"; shift ;;
   esac
 done
+
+if [[ -n ${machine_arg:-} && ${machine_arg} != "$machine" ]]; then
+  printf 'zsh-configure: this is %s, not %s (machine is derived from the hostname)\n' "$machine" "$machine_arg" >&2
+  exit 2
+fi
 
 recommend_features() { if [[ "$1" == fullfat ]]; then printf 'brew,plugins,gcloud,kubernetes'; fi; }
 recommend_prompt()   { if [[ "$1" == fullfat ]]; then printf 'omp'; else printf 'basic'; fi; }
@@ -181,5 +187,6 @@ mv "$tmp" "$data_file"
 
 printf '\n==> Updated %s for %s (target=%s, prompt=%s, features=[%s])\n' \
   "${data_file/#$HOME/~}" "$machine" "$target" "$prompt" "$features"
-chezmoi apply ~/.zshrc 2>/dev/null || true
-printf '==> Applied ~/.zshrc. Review with: chezmoi diff %s ; open a new shell or run: source ~/.zshrc\n' "$data_file"
+printf '==> Applying changes (chezmoi apply)...\n'
+chezmoi apply
+printf '==> Done. Open a new shell or run: source ~/.zshrc\n'
