@@ -51,6 +51,12 @@ if have apt-get; then
   sudo apt-get install -y -qq shellcheck gh
 fi
 
+# 4. Generate the chezmoi config (machine data) if not already present.
+if [[ ! -f "$HOME/.config/chezmoi/chezmoi.toml" ]]; then
+  log "Generating chezmoi config (machine data)"
+  "$LOCAL_BIN/chezmoi" init --source "$REPO_DIR"
+fi
+
 log "Toolchain ready."
 printf '  repo:    %s\n' "$REPO_DIR"
 printf '  chezmoi: %s\n' "$("$LOCAL_BIN/chezmoi" --version | cut -d, -f1)"

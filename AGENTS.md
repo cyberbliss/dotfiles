@@ -10,6 +10,8 @@ there are no separate agent-specific rule files.
 |---|---|
 | `machines/<name>.md` | Per-machine intent and quirks. **Read this first.** |
 | `home/` | chezmoi source directory. All managed config lives here. |
+| `.chezmoiroot` | Points chezmoi at `home/` as the source root. |
+| `home/.chezmoi.toml.tmpl` | Generates `~/.config/chezmoi/chezmoi.toml` (`machine`, `zshVariant`). |
 | `packages/` | Package lists per platform (consumed by install scripts). |
 | `scripts/bootstrap.sh` | Fresh-machine bootstrap (git → clone → chezmoi/mise → hand off). |
 | `scripts/doctor.sh <machine>` | Verification. Non-zero exit on any failure. |
@@ -19,8 +21,10 @@ there are no separate agent-specific rule files.
 
 1. **Read the machine file first.** Open `machines/<name>.md`, then detect
    arch/OS/shell/sudo before changing anything.
-2. **Edit sources, never `~` directly.** Configuration is managed with chezmoi;
-   make changes under `home/` and run `chezmoi apply` to realise them.
+2. **Edit sources, never `~` directly.** Configuration is managed with chezmoi
+   (source root `home/`, wired via `.chezmoiroot`); make changes under `home/`
+   and run `chezmoi apply` to realise them. If `~/.config/chezmoi/chezmoi.toml`
+   is missing, run `chezmoi init --source "$PWD"` first.
 3. **Show privileged/destructive commands before running them** — `sudo`, `rm`,
    `chsh`, package removals, anything that rewrites system state.
 4. **Never commit secrets** (tokens, keys, credentials). Record required manual

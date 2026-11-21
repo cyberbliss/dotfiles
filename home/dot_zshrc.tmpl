@@ -1,0 +1,7 @@
+{{- if eq .zshVariant "simple" -}}
+{{ template "zshrc-simple" . }}
+{{- else if eq .zshVariant "rpi" -}}
+{{ template "zshrc-rpi" . }}
+{{- else -}}
+{{ template "zshrc-client" . }}
+{{- end -}}
