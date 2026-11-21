@@ -9,6 +9,8 @@ Goal is a deterministic, agent-bootstrapped setup: clone → install → `chezmo
 - Machine name: `chromebook` (hostname `penguin`)
 - User: `steve`
 - Legacy Dotbot profile this maps to: `ubuntu` (`zsh-simple` + apt)
+- Transitional Stage 3 profile: `chromebook` (`git`, `packages.ubuntu-sudo`,
+  `zsh-simple`). The `bash` config is intentionally omitted — see Quirks.
 
 ## Verified environment facts
 Last verified: 2026-11-21 on branch `agent-harness`.
@@ -43,6 +45,12 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   shells only. Non-login agent shells must reference these by absolute path.
 - **No X11 display server:** terminal-only tooling; avoid GUI/clipboard utilities
   that assume X.
+- **Dotbot cannot overwrite existing regular files:** the legacy `bash.yaml`
+  config links `~/.profile`, `~/.bashrc`, `~/.bash_logout`, but Crostini ships
+  these as regular files. With `force` unset, Dotbot warns and exits non-zero
+  (and `install-profile` uses `set -e`), aborting the run. The transitional
+  `chromebook` profile therefore omits `bash`; those files stay as shipped until
+  chezmoi takes over.
 
 ## Manual steps after bootstrap (cannot be automated / require secrets)
 - `gh auth login` (git credential helper depends on it; `~/.gitconfig` already
