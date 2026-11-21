@@ -9,7 +9,7 @@
 {{- end }}
 #
 # Client-prompt assets (antidote plugin list + oh-my-posh theme) only belong on
-# machines that actually use the client zsh variant (Homebrew machines).
+# fullfat/Homebrew machines.
 {{- if not .brew }}
 .zsh_plugins.txt
 .config/stevejudd-full.omp.json

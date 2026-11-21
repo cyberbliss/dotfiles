@@ -1,7 +1,16 @@
-{{- if eq .zshVariant "simple" -}}
-{{ template "zshrc-simple" . }}
-{{- else if eq .zshVariant "rpi" -}}
-{{ template "zshrc-rpi" . }}
-{{- else -}}
-{{ template "zshrc-client" . }}
+{{- $machines := index . "machines" | default dict -}}
+{{- $mc := index $machines (index . "machine") | default dict -}}
+{{- $target := index $mc "targetType" | default (index . "defaultTargetType") -}}
+{{- $zsh := index $mc "zsh" | default dict -}}
+{{- $defaultPrompt := "basic" -}}
+{{- $defaultFeatures := list -}}
+{{- if eq $target "fullfat" -}}
+{{-   $defaultPrompt = "omp" -}}
+{{-   $defaultFeatures = list "brew" "plugins" "gcloud" "kubernetes" -}}
 {{- end -}}
+{{- $prompt := index $zsh "prompt" | default $defaultPrompt -}}
+{{- $features := index $zsh "features" | default $defaultFeatures -}}
+{{ includeTemplate "zsh-base" . }}
+{{ if eq $prompt "omp" }}{{ includeTemplate "zsh-prompt-omp" . }}{{ else }}{{ includeTemplate "zsh-prompt-basic" . }}{{ end }}
+{{ if has "brew" $features }}{{ includeTemplate "zsh-mod-brew" . }}{{ end }}
+{{ range $f := $features }}{{ if ne $f "brew" }}{{ includeTemplate (printf "zsh-mod-%s" $f) . }}{{ end }}{{ end }}

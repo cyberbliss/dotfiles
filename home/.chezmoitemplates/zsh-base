@@ -1,6 +1,11 @@
+# ============================================================================
+# zsh base config -- applies to EVERY machine (see home/dot_zshrc.tmpl).
+# Machine-specific extras live in zsh-prompt-* and zsh-mod-* templates.
+# ============================================================================
 export TERM=xterm-256color
 export PATH="$HOME/.opencode/bin:$PATH"
-# zsh customisation
+
+# History
 HISTFILE=$HOME/.zhistory
 SAVEHIST=100000
 HISTSIZE=$(( 1.2 * SAVEHIST ))
@@ -16,9 +21,7 @@ setopt auto_cd # cd by typing directory name if it's not a command
 setopt NO_CLOBBER # Don't let > silently overwrite files. To overwrite, use >! instead.
 setopt INTERACTIVE_COMMENTS # Treat comments pasted into the command line as comments, not code.
 
-# Don't treat non-executable files in your $path as commands. This makes sure
-# they don't show up as command completions. Settinig this option can impact
-# performance on older systems, but should not be a problem on modern ones.
+# Don't treat non-executable files in your $path as commands.
 setopt HASH_EXECUTABLES_ONLY
 
 # Sort numbers numerically, not lexicographically.
@@ -62,6 +65,7 @@ zstyle ':completion:*:*:*:*:default' list-colors ${(s.:.)LS_COLORS}
 
 alias l='ls -lah --color=auto --group-directories-first'
 alias c='clear'
+
 # History tweaks
 alias h='history -i -200 -1'
 function hs
@@ -81,64 +85,21 @@ alias ....="cd ../../.."
 alias .....="cd ../../../.."
 alias ......="cd ../../../../.."
 
-# apt aliases
-alias aptupd='sudo apt update'
-alias aptupg='sudo apt update & sudo apt full-upgrade -V'
-alias aptinst='sudo apt install -V'
-alias chkup='/usr/lib/update-notifier/apt-check -p --human-readable'
-alias chkboot='cat /var/run/reboot-required'
-alias apts='apt search'
+# tmux aliases
+alias t='tmux attach || tmux new-session'
+alias ta='tmux attach -t'
+alias tn='tmux new-session'
+alias tl='tmux list-sessions'
 
-# Prompt
-setopt PROMPT_SUBST
-# get current branch in git repo
-function parse_git_branch() {
-	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
-	if [ ! -z "${BRANCH}" ]
-	then
-		STAT=`parse_git_dirty`
-		echo "[${BRANCH}${STAT}]"
-	else
-		echo ""
-	fi
-}
+# Python: stop creating cached files
+export PYTHONDONTWRITEBYTECODE=True
 
-# get current status of git repo
-function parse_git_dirty {
-	gstatus=`git status 2>&1 | tee`
-	dirty=`echo -n "${gstatus}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
-	untracked=`echo -n "${gstatus}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
-	ahead=`echo -n "${gstatus}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
-	newfile=`echo -n "${gstatus}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
-	renamed=`echo -n "${gstatus}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
-	deleted=`echo -n "${gstatus}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
-	bits=''
-	if [ "${renamed}" -eq "0" ]; then
-		bits=">${bits}"
-	fi
-	if [ "${ahead}" -eq "0" ]; then
-		bits="*${bits}"
-	fi
-	if [ "${newfile}" -eq "0" ]; then
-		bits="+${bits}"
-	fi
-	if [ "${untracked}" -eq "0" ]; then
-		bits="?${bits}"
-	fi
-	if [ "${deleted}" -eq "0" ]; then
-		bits="x${bits}"
-	fi
-	if [ "${dirty}" -eq "0" ]; then
-		bits="!${bits}"
-	fi
-	if [ ! -z "${bits}" ]; then
-		echo " ${bits}"
-	else
-		echo ""
-	fi
-}
-
-NEWLINE=$'\n'
-PROMPT='%F{220}%n@%m:%F{033} %~ %F{208}$(parse_git_branch) %F{red}%(?..<%?>)%f${NEWLINE}$ '
-
-
+# apt aliases (Debian/Ubuntu/Mint only)
+if (( $+commands[apt-get] )); then
+    alias aptupd='sudo apt update'
+    alias aptupg='sudo apt update & sudo apt full-upgrade -V'
+    alias aptinst='sudo apt install -V'
+    alias chkup='/usr/lib/update-notifier/apt-check -p --human-readable'
+    alias chkboot='cat /var/run/reboot-required'
+    alias apts='apt search'
+fi

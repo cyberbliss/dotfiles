@@ -42,8 +42,10 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   `scripts/install-extras.sh`): `gcloud`, `docker`, `mise` runtimes
   (`packages/mise.txt`), and `prompt` (oh-my-posh + antidote). Run as
   `scripts/install-extras.sh chromebook --with <stack,...>`. Re-runnable.
-- This machine's zsh variant is `simple`, so it does **not** need antidote /
-  oh-my-posh / brew; only offer `prompt` if the user asks.
+- **zsh:** target type `lite` (`home/.chezmoidata.toml`) — base config plus the
+  basic git prompt only; no `brew`/`plugins`/`gcloud`/`kubernetes` modules. The
+  `prompt` install-extras stack is not needed here. Change with
+  `scripts/zsh-configure.sh chromebook`.
 
 ## Quirks
 - **Clipboard / OSC 52:** the ChromeOS Terminal supports OSC 52, but the current

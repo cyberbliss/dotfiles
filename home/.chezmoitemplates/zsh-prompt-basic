@@ -1,0 +1,65 @@
+
+# ---- prompt: basic (lightweight, git-aware) ----
+setopt PROMPT_SUBST
+# get current branch in git repo
+function parse_git_branch() {
+	BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+	if [ ! -z "${BRANCH}" ]
+	then
+		STAT=`parse_git_dirty`
+		echo "[${BRANCH}${STAT}]"
+	else
+		echo ""
+	fi
+}
+
+# get current status of git repo
+function parse_git_dirty {
+	gstatus=`git status 2>&1 | tee`
+	dirty=`echo -n "${gstatus}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+	untracked=`echo -n "${gstatus}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+	ahead=`echo -n "${gstatus}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+	newfile=`echo -n "${gstatus}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+	renamed=`echo -n "${gstatus}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+	deleted=`echo -n "${gstatus}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+	bits=''
+	if [ "${renamed}" -eq "0" ]; then
+		bits=">${bits}"
+	fi
+	if [ "${ahead}" -eq "0" ]; then
+		bits="*${bits}"
+	fi
+	if [ "${newfile}" -eq "0" ]; then
+		bits="+${bits}"
+	fi
+	if [ "${untracked}" -eq "0" ]; then
+		bits="?${bits}"
+	fi
+	if [ "${deleted}" -eq "0" ]; then
+		bits="x${bits}"
+	fi
+	if [ "${dirty}" -eq "0" ]; then
+		bits="!${bits}"
+	fi
+	if [ ! -z "${bits}" ]; then
+		echo " ${bits}"
+	else
+		echo ""
+	fi
+}
+
+# get current k8s context
+function get_k8s_context {
+	if test -f "$HOME/.kube/config"; then
+		ctx=$(cat ~/.kube/config | grep "current-context:" | sed "s/current-context: //")
+
+    	if [ -n "$ctx" ]; then
+        	echo "(k8s: ${ctx})"
+    	fi
+	else
+		echo ""
+	fi
+}
+
+NEWLINE=$'\n'
+PROMPT='%F{220}%n@%m:%F{033} %~ %F{208}$(parse_git_branch) %F{green}$(get_k8s_context) %F{red}%(?..<%?>)%f${NEWLINE}$ '

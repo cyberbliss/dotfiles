@@ -1,0 +1,10 @@
+
+# ---- module: shell plugins via antidote (https://getantidote.github.io/) ----
+if command -v brew >/dev/null 2>&1; then
+    _antidote="$(brew --prefix)/opt/antidote/share/antidote/antidote.zsh"
+    if [[ -f "$_antidote" ]]; then
+        source "$_antidote"
+        antidote load
+    fi
+    unset _antidote
+fi

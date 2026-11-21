@@ -3,13 +3,12 @@
 # render-matrix.sh - prove the OS/arch/machine template paths render correctly.
 #
 # Uses `chezmoi --override-data` to simulate each machine's .chezmoi.os/.arch and
-# data (machine/zshVariant/brew), then asserts, per row:
+# data (machine/brew/defaultTargetType), then asserts, per row:
 #   * which target files are managed (i.e. after home/.chezmoiignore)
-#   * which zsh variant home/dot_zshrc.tmpl renders to
+#   * which zsh config the shell renders to (base + prompt + modules)
 #   * which package-installer branch is selected
 #
-# Runs anywhere, makes no changes, and exits non-zero if any row fails. This is
-# the "render matrix" from the agent-harness plan (Stage 6).
+# Runs anywhere, makes no changes, and exits non-zero if any row fails.
 
 set -euo pipefail
 
@@ -21,17 +20,17 @@ fail=0
 ok()  { printf '  ok    %s\n' "$*"; }
 bad() { printf '  FAIL  %s\n' "$*" >&2; fail=1; }
 
-# name | os | arch | machine | variant | brew | must-match (; sep) | must-not-match (; sep) | zsh marker | zsh forbid
+# name | os | arch | machine | brew | defaultTarget | must-match (; sep) | must-not-match (; sep) | zsh marker | zsh forbid
 ROWS=(
-  'chromebook|linux|arm64|chromebook|simple|false|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|aptupd|antidote load'
-  'mint|linux|amd64|mint|client|true|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|antidote load|aptupd'
-  'darwin-arm64(render-only)|darwin|arm64|mac|client|true|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|\.bashrc;\.bash_logout;^\.profile$|antidote load|aptupd'
+  'chromebook|linux|arm64|chromebook|false|lite|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|parse_git_branch|oh-my-posh'
+  'mint|linux|amd64|mint|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|oh-my-posh|parse_git_branch'
+  'darwin-arm64(render-only)|darwin|arm64|mac|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|\.bashrc;\.bash_logout;^\.profile$|oh-my-posh|parse_git_branch'
 )
 
 for row in "${ROWS[@]}"; do
-  IFS='|' read -r name os arch machine variant brew must mustnot zsh_marker zsh_forbid <<< "$row"
-  printf '%s (%s/%s, %s, brew=%s)\n' "$name" "$os" "$arch" "$machine" "$brew"
-  ov="{\"chezmoi\":{\"os\":\"${os}\",\"arch\":\"${arch}\"},\"machine\":\"${machine}\",\"zshVariant\":\"${variant}\",\"brew\":${brew}}"
+  IFS='|' read -r name os arch machine brew default_target must mustnot zsh_marker zsh_forbid <<< "$row"
+  printf '%s (%s/%s, %s, brew=%s, default=%s)\n' "$name" "$os" "$arch" "$machine" "$brew" "$default_target"
+  ov="{\"chezmoi\":{\"os\":\"${os}\",\"arch\":\"${arch}\"},\"machine\":\"${machine}\",\"brew\":${brew},\"defaultTargetType\":\"${default_target}\"}"
 
   managed="$("${CHEZMOI[@]}" managed --override-data "$ov")"
 

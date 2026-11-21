@@ -10,7 +10,8 @@ hand-editing of files in `$HOME`.
 - Machine name: `mint` (hostname `steve`)
 - Legacy Dotbot profile this maps to: `ubuntu-coder` (apt + gcloud + docker +
   `zsh-client` + linuxbrew `Brewfile-ubuntu`)
-- chezmoi variant: `client` (linuxbrew + oh-my-posh + antidote)
+- zsh target type: `fullfat` (base + oh-my-posh prompt + `brew`, `plugins`,
+  `gcloud`, `kubernetes` modules) — see `home/.chezmoidata.toml`
 - Homebrew: **linuxbrew** at `/home/linuxbrew/.linuxbrew` (amd64 Linux is
   supported, unlike the chromebook's arm64).
 
@@ -32,8 +33,8 @@ date. Values from the user: Mint 22, Ubuntu 24.04 base, amd64.
 - Baseline: `packages/common.txt` + `packages/debian.txt` via apt (same
   `run_onchange_install-packages.sh.tmpl` as every Linux machine).
 - Homebrew: `home/run_onchange_install-brew.sh.tmpl` runs `brew bundle` with
-  `Brewfile-ubuntu` (selected by `.chezmoi.os`), because `brew = true` for the
-  `client` variant.
+  `Brewfile-ubuntu` (selected by `.chezmoi.os`), because `brew = true` for this
+  machine (fullfat).
 - Optional (agent asks first): `scripts/install-extras.sh mint --with
   gcloud,docker`. The legacy `ubuntu-coder` profile installed both.
 - Derive apt codename dynamically; **prefer `UBUNTU_CODENAME`** (see Quirks).
@@ -45,8 +46,8 @@ date. Values from the user: Mint 22, Ubuntu 24.04 base, amd64.
   `apt_codename()` (prefers `UBUNTU_CODENAME`), and `doctor.sh`'s `os` check
   accepts either `VERSION_CODENAME` or `UBUNTU_CODENAME`.
 - **linuxbrew on amd64 Linux only:** supported here; the chromebook (arm64) has
-  no Homebrew, which is why the `client` variant is gated on the `brew` data
-  value rather than on OS alone.
+  no Homebrew, which is why the brew module and client assets are gated on the
+  `brew` data value rather than on OS alone.
 - **Existing Dotbot install:** migrate with `chezmoi apply` after removing the
   old symlinks; keep the machine running until `doctor.sh` passes (rollback is
   re-running the old `make install profile=ubuntu-coder`).

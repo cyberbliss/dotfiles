@@ -22,6 +22,10 @@ apply: ## Apply the chezmoi source to $HOME (config + baseline packages)
 doctor: ## Verify a machine: make doctor machine=chromebook
 	./scripts/doctor.sh $(machine)
 
+.PHONY: zsh
+zsh: ## Walk through this machine's zsh target type + modules
+	./scripts/zsh-configure.sh
+
 .PHONY: extras
 extras: ## List the optional installable stacks
 	./scripts/install-extras.sh --list

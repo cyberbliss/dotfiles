@@ -11,11 +11,13 @@ there are no separate agent-specific rule files.
 | `machines/<name>.md` | Per-machine intent and quirks. **Read this first.** |
 | `home/` | chezmoi source directory. All managed config lives here. |
 | `.chezmoiroot` | Points chezmoi at `home/` as the source root. |
-| `home/.chezmoi.toml.tmpl` | Generates `~/.config/chezmoi/chezmoi.toml` (`machine`, `zshVariant`). |
+| `home/.chezmoi.toml.tmpl` | Generates `~/.config/chezmoi/chezmoi.toml` (`machine`, `brew`, `defaultTargetType`). |
+| `home/.chezmoidata.toml` | Per-machine zsh options (machine-keyed): `targetType`, prompt, modules. |
 | `packages/` | Package lists: `common.txt`, `debian.txt` (baseline), `mise.txt` (optional runtimes). |
 | `scripts/prereqs.sh` | User runs first: installs OpenCode + PATH + OpenRouter instructions. |
 | `scripts/bootstrap.sh` | Fresh-machine bootstrap (git → clone → chezmoi/mise → hand off). |
 | `scripts/install-extras.sh` | Optional stacks (gcloud/docker/mise/prompt); the agent asks first. |
+| `scripts/zsh-configure.sh` | Records this machine's zsh target type + modules (agent walks the user). |
 | `scripts/doctor.sh <machine>` | Verification. Non-zero exit on any failure. |
 | `scripts/render-matrix.sh` | Proves the OS/arch/machine template paths render (Stage 6). |
 
@@ -46,8 +48,11 @@ there are no separate agent-specific rule files.
 4. **Ask** which optional stacks the user wants (`scripts/install-extras.sh
    --list`), then apply their choices with
    `scripts/install-extras.sh <name> --with <stack,...>`.
-5. Run `scripts/doctor.sh <name>`; fix and repeat until it passes.
-6. Summarise changes and list manual steps (gcloud/gh/ssh auth).
+5. **Walk the user through the zsh options** and record the choices with
+   `scripts/zsh-configure.sh` (target type `lite` vs `fullfat`, prompt, modules;
+   see the "zsh" notes in the machine file). The shared base applies regardless.
+6. Run `scripts/doctor.sh <name>`; fix and repeat until it passes.
+7. Summarise changes and list manual steps (gcloud/gh/ssh auth).
 
 ## Platforms
 

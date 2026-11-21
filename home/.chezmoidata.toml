@@ -1,0 +1,24 @@
+# Per-machine zsh options (committed). The agent walks the user through these
+# choices -- see AGENTS.md and scripts/zsh-configure.sh.
+#
+# targetType controls the recommended defaults:
+#   lite    - constrained/low-power (Raspberry Pi, Crostini): basic prompt, no
+#             heavyweight extras.
+#   fullfat - full dev workstation: oh-my-posh prompt + brew/plugins/gcloud/k8s.
+#
+# NOTE: chezmoi merges every file under .chezmoidata/, so this must be a single
+# machine-keyed file (one [machines.<name>] table per machine).
+
+[machines.chromebook]
+targetType = "lite"
+
+[machines.chromebook.zsh]
+prompt = "basic"
+features = []
+
+[machines.mint]
+targetType = "fullfat"
+
+[machines.mint.zsh]
+prompt = "omp"
+features = ["brew", "plugins", "gcloud", "kubernetes"]

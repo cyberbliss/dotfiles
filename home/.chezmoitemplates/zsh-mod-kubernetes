@@ -1,0 +1,11 @@
+
+# ---- module: Kubernetes tooling ----
+alias kctx='kubectx'
+alias kc='kubectl'
+#alias pkc="HTTPS_PROXY=localhost:8888 kubectl"
+alias kns='kubens'
+#alias pkns="HTTPS_PROXY=localhost:8888 kubens"
+#alias ph='HTTPS_PROXY=localhost:8888 helm'
+alias dry='docker run --rm -it -v /var/run/docker.sock:/var/run/docker.sock moncho/dry'
+
+export PATH="${PATH}:${HOME}/.krew/bin"

@@ -151,8 +151,8 @@ do_prompt() {
   else
     log "antidote already present"
   fi
-  warn "the client zshrc sources brew's antidote/oh-my-posh paths; on a"
-  warn "non-Homebrew Linux box those lines still need templating (deferred)."
+  warn "installed oh-my-posh + antidote under ~/. To use them in zsh, enable the"
+  warn "modules: scripts/zsh-configure.sh --target fullfat --prompt omp --features brew,plugins"
 }
 
 run_stack() {

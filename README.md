@@ -49,19 +49,38 @@ installers (npm, bun, pnpm, mise) are listed at <https://opencode.ai/docs/>.
 make apply                       # chezmoi apply: config + baseline packages
 make doctor machine=chromebook   # verify a machine (non-zero exit on failure)
 make extras                      # list optional stacks (gcloud/docker/mise/prompt)
+make zsh                         # walk through zsh target type + modules
 make render-matrix               # prove per-machine template rendering
 ```
 
 Edit configuration in `home/`, **never** in `$HOME` — chezmoi owns those files.
-For example the shell config lives in `home/.chezmoitemplates/zshrc-<variant>`
-(`zshrc-simple` on the chromebook, `zshrc-client` on Homebrew machines).
+The shell config is a shared base plus per-machine prompt/modules; see below.
+
+## Zsh configuration
+
+Every machine gets `home/.chezmoitemplates/zsh-base` (history, completion,
+aliases, colours). On top of that a **target type** picks sensible defaults and
+optional **modules** are toggled per machine:
+
+- `lite` (Raspberry Pi, Crostini) → basic git prompt; no heavyweight extras.
+- `fullfat` (dev workstation) → oh-my-posh prompt + `brew`, `plugins`, `gcloud`,
+  `kubernetes`.
+
+Choices live in `home/.chezmoidata.toml` (machine-keyed). The agent walks you
+through them with `scripts/zsh-configure.sh`; you can also run it directly:
+
+```bash
+make zsh                                   # interactive walkthrough
+scripts/zsh-configure.sh --target fullfat --prompt omp \
+  --features brew,plugins,gcloud,kubernetes
+```
 
 ## Machines
 
 - `machines/chromebook.md` — ChromeOS Crostini: Debian 13 (trixie), arm64,
-  `simple` zsh variant, apt only.
-- `machines/mint.md` — Linux Mint 22 (Ubuntu 24.04 / `noble`), amd64, `client`
-  zsh variant with linuxbrew.
+  `lite` (basic prompt), apt only.
+- `machines/mint.md` — Linux Mint 22 (Ubuntu 24.04 / `noble`), amd64, `fullfat`
+  (linuxbrew + oh-my-posh).
 
 ## Homebrew machines
 
