@@ -1,1 +1,62 @@
+# ---------------------------------------------------------------------------
+# Never commit secrets (AGENTS.md golden rule 4). This list is defensive: these
+# files should not exist in the repo at all, but if one is ever copied in or
+# captured with `chezmoi add`, we want git to refuse it.
+#
+# NOTE: age-encrypted files (*.age) ARE meant to be committed and are therefore
+# intentionally NOT ignored.
+# ---------------------------------------------------------------------------
+
+# Secrets / keys / credentials
+.env
+.env.*
+**/.env
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.jks
+**/*.ppk
+**/id_rsa*
+**/id_ed25519*
+**/id_dsa*
+**/*.ppk
+**/.netrc
+**/.htpasswd
+**/credentials
+**/credentials.json
+**/*-credentials.json
+**/service-account*.json
+**/kubeconfig
+**/auth.json
+**/*.secret
+
+# Tool / cloud credential stores (guard against `chezmoi add` sweeping them in)
+**/opencode/service.json
+**/opencode/auth.json
+**/opencode/opencode.db
+**/opencode/opencode.db-*
+**/chezmoi/chezmoi.toml
+**/.aws/credentials
+**/.aws/config
+**/.docker/config.json
+**/.gcloud/
+**/terraform.tfstate
+**/terraform.tfstate.*
+**/*.tfvars
+**/.npmrc
+**/.pypirc
+**/.pgpass
+**/.my.cnf
+
+# OS / editor cruft
+**/.DS_Store
+Thumbs.db
+**/*.swp
+**/*.swo
+**/*~
+**/.#*
+**/\#*\#
+
+# Generated
 Brewfile.lock.json
