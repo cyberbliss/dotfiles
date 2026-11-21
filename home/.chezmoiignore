@@ -1,0 +1,2 @@
+# chezmoi ignore list (source root: home/).
+# Target paths listed here are not managed. Populated per-OS/arch in Stage 6.
