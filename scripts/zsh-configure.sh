@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # zsh-configure.sh [--target lite|fullfat] [--prompt basic|omp]
-#                  [--features <a,b,...>] [--list] [--force]
+#                  [--features <a,b,...>] [--list]
 #
 # Records this machine's zsh options in home/.chezmoidata.toml (machine-keyed)
 # and applies them. Intended to be run by the agent, which should WALK THE USER
@@ -37,23 +37,22 @@ feature_desc() {
 tpl() { chezmoi execute-template "$1"; }
 
 machine="$(tpl '{{ .machine }}')"
-brew_data="$(tpl '{{ .brew }}')"
 default_target="$(tpl '{{ .defaultTargetType }}')"
 current_target="$(tpl '{{ with index .machines .machine }}{{ .targetType }}{{ end }}')"
 current_prompt="$(tpl '{{ with index .machines .machine }}{{ .zsh.prompt }}{{ end }}')"
 current_features="$(tpl '{{ with index .machines .machine }}{{ .zsh.features | join "," }}{{ end }}')"
 [[ -n $current_target ]] || current_target="$default_target"
 
-target=""; prompt=""; features=""; interactive=0; FORCE=0
+target=""; prompt=""; features=""
+p_target=0; p_prompt=0; p_features=0; interactive=0
 while (($#)); do
   case "$1" in
-    --target)   target="${2:-}"; shift 2 ;;
-    --prompt)   prompt="${2:-}"; shift 2 ;;
-    --features) features="${2:-}"; shift 2 ;;
-    --force)    FORCE=1; shift ;;
+    --target)   target="${2:-}"; p_target=1; shift 2 ;;
+    --prompt)   prompt="${2:-}"; p_prompt=1; shift 2 ;;
+    --features) features="${2:-}"; p_features=1; shift 2 ;;
     --list)     printf 'target: %s (default %s)\n' "$current_target" "$default_target"
                 printf 'prompt: basic|omp\nfeatures: %s\n' "$(IFS=,; printf '%s' "${ALL_FEATURES[*]}")"; exit 0 ;;
-    -h|--help)  sed -n '2,26p' "$0"; exit 0 ;;
+    -h|--help)  sed -n '2,24p' "$0"; exit 0 ;;
     *) printf 'zsh-configure: unknown option %s\n' "$1" >&2; exit 2 ;;
   esac
 done
@@ -61,16 +60,11 @@ done
 recommend_features() { if [[ "$1" == fullfat ]]; then printf 'brew,plugins,gcloud,kubernetes'; fi; }
 recommend_prompt()   { if [[ "$1" == fullfat ]]; then printf 'omp'; else printf 'basic'; fi; }
 
-if [[ -z $target ]]; then
+# Interactive only when nothing was provided and we have a terminal; otherwise
+# report the current settings and exit.
+if ((!p_target)) && [[ -z $target && $p_prompt == 0 && $p_features == 0 ]]; then
   if [[ -t 0 ]]; then
     interactive=1
-    printf '\nMachine: %s (default target: %s)\n\n' "$machine" "$default_target"
-    printf 'Target type:\n'
-    printf '  lite    - constrained/low-power (Raspberry Pi, Crostini): basic prompt,\n'
-    printf '            no heavyweight extras.\n'
-    printf '  fullfat - full dev workstation: oh-my-posh + brew/plugins/gcloud/k8s.\n\n'
-    read -r -p "Target type [lite/fullfat] (default ${current_target}): " target
-    [[ -n $target ]] || target="$current_target"
   else
     printf 'zsh-configure: %s target=%s prompt=%s features=[%s]\n' \
       "$machine" "$current_target" "${current_prompt:-basic}" "$current_features"
@@ -78,53 +72,74 @@ if [[ -z $target ]]; then
     exit 0
   fi
 fi
+[[ -n $target ]] || target="${current_target:-$default_target}"
+
+if ((interactive)); then
+  printf '\nMachine: %s\n' "$machine"
+  printf 'Target type:\n'
+  printf '  lite    - constrained/low-power (Raspberry Pi, Crostini): basic prompt,\n'
+  printf '            no heavyweight extras.\n'
+  printf '  fullfat - full dev workstation: oh-my-posh + brew/plugins/gcloud/k8s.\n\n'
+  read -r -p "Target type [lite/fullfat] (default ${target}): " _t
+  [[ -n $_t ]] || _t="$target"; target="$_t"
+fi
 [[ "$target" == lite || "$target" == fullfat ]] || { printf 'zsh-configure: target must be lite|fullfat\n' >&2; exit 2; }
 
 rec_feat="$(recommend_features "$target")"
 rec_prompt="$(recommend_prompt "$target")"
+def_feat="${current_features:-$rec_feat}"
+def_prompt="${current_prompt:-$rec_prompt}"
 
-if [[ $interactive == 1 ]]; then
-  printf '\nOptional modules (recommended for %s: %s):\n' "$target" "${rec_feat:-none}"
+if ((interactive)); then
+  printf '\nOptional modules (current default: %s):\n' "${def_feat:-none}"
   selected=()
   for f in "${ALL_FEATURES[@]}"; do
-    default_no=1; [[ ",$rec_feat," == *",$f,"* ]] && default_no=0
-    prompt_str=" [y/N]"; [[ $default_no == 0 ]] && prompt_str=" [Y/n]"
-    read -r -p "  Enable ${f}${prompt_str}? $(feature_desc "$f"): " ans
+    default_no=1; [[ ",$def_feat," == *",$f,"* ]] && default_no=0
+    [[ $default_no == 0 ]] && suffix=" [Y/n]" || suffix=" [y/N]"
+    read -r -p "  Enable ${f}${suffix}? $(feature_desc "$f"): " ans
     if [[ $default_no == 0 ]]; then
       [[ $ans =~ ^[Nn]$ ]] || selected+=("$f")
     else
       [[ $ans =~ ^[Yy]$ ]] && selected+=("$f")
     fi
   done
-  features="$(IFS=,; printf '%s' "${selected[*]:-}")"
-  read -r -p "Prompt [basic/omp] (default ${rec_prompt}): " prompt
-  [[ -n $prompt ]] || prompt="$rec_prompt"
+  features="$(IFS=,; printf '%s' "${selected[*]:-}")"; p_features=1
+  read -r -p "Prompt [basic/omp] (default ${def_prompt}): " _p
+  [[ -n $_p ]] || _p="$def_prompt"; prompt="$_p"; p_prompt=1
 fi
 
-[[ -n $prompt ]] || prompt="$rec_prompt"
-[[ -n $features ]] || features="$rec_feat"
-[[ "$prompt" == basic || "$prompt" == omp ]] || { printf 'zsh-configure: prompt must be basic|omp\n' >&2; exit 2; }
+((p_prompt))   || prompt="$def_prompt"
+((p_features)) || features="$def_feat"
 
-# Coherence: fullfat / omp / brew / plugins only make sense where Homebrew exists.
-incoherent=""
-[[ $target == fullfat ]] && incoherent+="targetType=fullfat "
-[[ $prompt == omp ]] && incoherent+="prompt=omp "
+[[ "$prompt" == basic || "$prompt" == omp ]] || { printf 'zsh-configure: prompt must be basic|omp\n' >&2; exit 2; }
 if [[ -n $features ]]; then
-  IFS=',' read -ra _inc <<< "$features"
-  for f in "${_inc[@]}"; do
-    case "$f" in brew|plugins) incoherent+="feature=$f " ;; esac
+  IFS=',' read -ra _fa <<< "$features"
+  for f in "${_fa[@]}"; do
+    [[ -n $f ]] || continue
+    printf '%s\n' "${ALL_FEATURES[@]}" | grep -qxF "$f" \
+      || { printf 'zsh-configure: unknown feature %s (allowed: %s)\n' "$f" "$(IFS=,; printf '%s' "${ALL_FEATURES[*]}")" >&2; exit 2; }
   done
 fi
-if [[ -n $incoherent && $brew_data != true ]]; then
-  printf '\nWARNING: %sselected, but this machine has brew=false.\n' "$incoherent" >&2
-  printf '  Homebrew / oh-my-posh / antidote are unavailable, and the client assets\n' >&2
-  printf '  (zsh_plugins.txt, the omp theme) are not shipped -- those modules no-op.\n' >&2
+
+# Advisory: the omp prompt and plugins module need tools that may not be
+# installed yet. They come from Homebrew OR a standalone install (no brew
+# required) via `scripts/install-extras.sh --with prompt`.
+missing=""
+if [[ $prompt == omp ]]; then
+  command -v oh-my-posh >/dev/null 2>&1 || [[ -x $HOME/.local/bin/oh-my-posh ]] || missing+="oh-my-posh "
+fi
+if [[ ",$features," == *",plugins,"* ]]; then
+  if [[ ! -f "$HOME/.antidote/antidote.zsh" ]] \
+     && ! { command -v brew >/dev/null 2>&1 && [[ -f "$(brew --prefix)/opt/antidote/share/antidote/antidote.zsh" ]]; }; then
+    missing+="antidote "
+  fi
+fi
+if [[ -n $missing ]]; then
+  printf '\nNOTE: %snot installed yet. Install the prompt tooling (no Homebrew needed) with:\n' "$missing" >&2
+  printf '  scripts/install-extras.sh %s --with prompt\n' "$machine" >&2
   if ((interactive)); then
-    read -r -p "Proceed anyway? [y/N] " _ok
-    [[ $_ok =~ ^[Yy]$ ]] || { printf 'zsh-configure: aborted\n' >&2; exit 1; }
-  elif ((!FORCE)); then
-    printf 'zsh-configure: refusing without --force\n' >&2
-    exit 3
+    read -r -p "Continue anyway? [Y/n] " _ok
+    [[ $_ok =~ ^[Nn]$ ]] && { printf 'zsh-configure: aborted\n' >&2; exit 1; }
   fi
 fi
 

@@ -2,9 +2,15 @@
 # ---- module: Google Cloud SDK ----
 export USE_GKE_GCLOUD_AUTH_PLUGIN=True
 export CLOUDSDK_PYTHON_SITEPACKAGES=1
-if command -v brew >/dev/null 2>&1; then
-    # The next line updates PATH for the Google Cloud SDK.
-    if [ -f "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc" ]; then source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"; fi
-    # The next line enables shell command completion for gcloud.
-    if [ -f "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc" ]; then source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"; fi
+# Homebrew install or Google's apt install (/usr/lib/google-cloud-sdk).
+_sdk=""
+if command -v brew >/dev/null 2>&1 && [[ -f "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc" ]]; then
+    _sdk="$(brew --prefix)/share/google-cloud-sdk"
+elif [[ -f /usr/lib/google-cloud-sdk/path.zsh.inc ]]; then
+    _sdk="/usr/lib/google-cloud-sdk"
 fi
+if [[ -n "$_sdk" ]]; then
+    source "$_sdk/path.zsh.inc"
+    [[ -f "$_sdk/completion.zsh.inc" ]] && source "$_sdk/completion.zsh.inc"
+fi
+unset _sdk

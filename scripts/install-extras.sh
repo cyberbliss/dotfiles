@@ -12,7 +12,7 @@
 #   gcloud  Google Cloud CLI (Google apt repo; run `gcloud init` afterwards)
 #   docker  Docker Engine + compose/buildx (Docker apt repo; enables services)
 #   mise    Language/runtime tools listed in packages/mise.txt (via mise)
-#   prompt  oh-my-posh + antidote for the client-style zsh prompt
+#   prompt  oh-my-posh + antidote + Nerd Font for the zsh prompt (no Homebrew)
 #
 # Safe to re-run: every step is idempotent. With no --with and an interactive
 # terminal it prompts for each stack; otherwise it prints what is available.
@@ -131,13 +131,14 @@ do_mise() {
 
 do_prompt() {
   local bin="${HOME}/.local/bin" arch antidote="${HOME}/.antidote/antidote.zsh"
+  local fonts="${HOME}/.local/share/fonts"
   case "$(dpkg --print-architecture)" in
     amd64) arch=amd64 ;;
     arm64) arch=arm64 ;;
     *) warn "unsupported arch for oh-my-posh"; return 1 ;;
   esac
   mkdir -p "$bin"
-  if ! command -v oh-my-posh >/dev/null 2>&1; then
+  if ! command -v oh-my-posh >/dev/null 2>&1 && [[ ! -x "${bin}/oh-my-posh" ]]; then
     log "Installing oh-my-posh -> ${bin}"
     curl -fsSL -o "${bin}/oh-my-posh" \
       "https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-${arch}"
@@ -151,8 +152,22 @@ do_prompt() {
   else
     log "antidote already present"
   fi
-  warn "installed oh-my-posh + antidote under ~/. To use them in zsh, enable the"
-  warn "modules: scripts/zsh-configure.sh --target fullfat --prompt omp --features brew,plugins"
+  # A Nerd Font is needed for the oh-my-posh prompt glyphs.
+  if ! fc-list 2>/dev/null | grep -qi "Hack Nerd Font"; then
+    log "Installing Hack Nerd Font -> ${fonts} (glyphs for oh-my-posh)"
+    mkdir -p "$fonts"
+    local base="https://github.com/ryanoasis/nerd-fonts/raw/HEAD/patched-fonts/Hack" ok=1 spec dir file
+    for spec in Regular/HackNerdFont-Regular.ttf Bold/HackNerdFont-Bold.ttf Italic/HackNerdFont-Italic.ttf; do
+      dir="${spec%%/*}"; file="${spec##*/}"
+      curl -fsSL -o "${fonts}/${file}" "${base}/${dir}/${file}" || ok=0
+    done
+    ((ok)) || warn "font download failed; install a Nerd Font in your terminal manually"
+    command -v fc-cache >/dev/null 2>&1 && fc-cache -f "$fonts" >/dev/null 2>&1
+  else
+    log "Nerd Font already present"
+  fi
+  warn "installed oh-my-posh + antidote + Nerd Font under ~/ (no Homebrew needed)."
+  warn "Now enable the module: scripts/zsh-configure.sh --prompt omp --features plugins"
 }
 
 run_stack() {

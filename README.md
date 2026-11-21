@@ -75,8 +75,11 @@ scripts/zsh-configure.sh --target fullfat --prompt omp \
   --features brew,plugins,gcloud,kubernetes
 ```
 
-Choosing `fullfat`/`omp`/`brew`/`plugins` on a machine without Homebrew is
-flagged (those modules no-op); pass `--force` to accept it anyway.
+The `omp` prompt and `plugins` modules work with **or without** Homebrew: on a
+non-brew machine (e.g. arm64 Crostini) install the tooling with
+`scripts/install-extras.sh <machine> --with prompt` — that fetches the
+oh-my-posh binary, antidote and a Nerd Font under `~`. The script notes when the
+chosen modules' tooling is missing.
 
 ## Machines
 

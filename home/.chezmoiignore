@@ -1,16 +1,27 @@
 # chezmoi ignore list (source root: home/). Rendered per machine, so entries are
 # matched against *target* paths using the current template data.
 #
+# Effective zsh settings (same merge as home/dot_zshrc.tmpl).
+{{- $machines := index . "machines" | default dict -}}
+{{- $mc := index $machines (index . "machine") | default dict -}}
+{{- $target := index $mc "targetType" | default (index . "defaultTargetType") -}}
+{{- $zsh := index $mc "zsh" | default dict -}}
+{{- $prompt := index $zsh "prompt" | default (ternary "omp" "basic" (eq $target "fullfat")) -}}
+{{- $features := index $zsh "features" | default (ternary (list "brew" "plugins" "gcloud" "kubernetes") (list) (eq $target "fullfat")) -}}
+#
 # macOS uses zsh by default; don't ship the Linux bash startup files there.
 {{- if eq .chezmoi.os "darwin" }}
 .bash_logout
 .bashrc
 .profile
 {{- end }}
+{{- if ne $prompt "omp" }}
 #
-# Client-prompt assets (antidote plugin list + oh-my-posh theme) only belong on
-# fullfat/Homebrew machines.
-{{- if not .brew }}
-.zsh_plugins.txt
+# oh-my-posh theme: only needed for the omp prompt.
 .config/stevejudd-full.omp.json
+{{- end }}
+{{- if not (has "plugins" $features) }}
+#
+# antidote plugin list: only needed when the plugins module is enabled.
+.zsh_plugins.txt
 {{- end }}

@@ -43,9 +43,10 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   (`packages/mise.txt`), and `prompt` (oh-my-posh + antidote). Run as
   `scripts/install-extras.sh chromebook --with <stack,...>`. Re-runnable.
 - **zsh:** target type `lite` (`home/.chezmoidata.toml`) — base config plus the
-  basic git prompt only; no `brew`/`plugins`/`gcloud`/`kubernetes` modules. The
-  `prompt` install-extras stack is not needed here. Change with
-  `scripts/zsh-configure.sh chromebook`.
+  basic git prompt; no heavy modules by default. Oh-my-posh/plugins **can** be
+  enabled here without Homebrew via `scripts/install-extras.sh chromebook --with
+  prompt` (arm64 binaries + Nerd Font under `~`), then
+  `scripts/zsh-configure.sh chromebook --prompt omp --features plugins`.
 
 ## Quirks
 - **Clipboard / OSC 52:** the ChromeOS Terminal supports OSC 52, but the current

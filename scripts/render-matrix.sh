@@ -20,17 +20,18 @@ fail=0
 ok()  { printf '  ok    %s\n' "$*"; }
 bad() { printf '  FAIL  %s\n' "$*" >&2; fail=1; }
 
-# name | os | arch | machine | brew | defaultTarget | must-match (; sep) | must-not-match (; sep) | zsh marker | zsh forbid
+# name | os | arch | machine | brew | defaultTarget | must-match (; sep) | must-not-match (; sep) | zsh marker | zsh forbid | extra override (optional JSON)
 ROWS=(
-  'chromebook|linux|arm64|chromebook|false|lite|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|parse_git_branch|oh-my-posh'
-  'mint|linux|amd64|mint|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|oh-my-posh|parse_git_branch'
-  'darwin-arm64(render-only)|darwin|arm64|mac|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|\.bashrc;\.bash_logout;^\.profile$|oh-my-posh|parse_git_branch'
+  'chromebook|linux|arm64|chromebook|false|lite|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|parse_git_branch|oh-my-posh|'
+  'mint|linux|amd64|mint|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|oh-my-posh|parse_git_branch|'
+  'darwin-arm64(render-only)|darwin|arm64|mac|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|\.bashrc;\.bash_logout;^\.profile$|oh-my-posh|parse_git_branch|'
+  'chromebook-omp(render-only, no brew)|linux|arm64|chromebook|false|lite|stevejudd-full\.omp\.json;\.zsh_plugins\.txt|^a^z$|oh-my-posh|parse_git_branch|"machines":{"chromebook":{"targetType":"fullfat","zsh":{"prompt":"omp","features":["plugins"]}}}'
 )
 
 for row in "${ROWS[@]}"; do
-  IFS='|' read -r name os arch machine brew default_target must mustnot zsh_marker zsh_forbid <<< "$row"
+  IFS='|' read -r name os arch machine brew default_target must mustnot zsh_marker zsh_forbid extra <<< "$row"
   printf '%s (%s/%s, %s, brew=%s, default=%s)\n' "$name" "$os" "$arch" "$machine" "$brew" "$default_target"
-  ov="{\"chezmoi\":{\"os\":\"${os}\",\"arch\":\"${arch}\"},\"machine\":\"${machine}\",\"brew\":${brew},\"defaultTargetType\":\"${default_target}\"}"
+  ov="{\"chezmoi\":{\"os\":\"${os}\",\"arch\":\"${arch}\"},\"machine\":\"${machine}\",\"brew\":${brew},\"defaultTargetType\":\"${default_target}\"${extra:+,$extra}}"
 
   managed="$("${CHEZMOI[@]}" managed --override-data "$ov")"
 
