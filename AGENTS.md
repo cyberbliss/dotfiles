@@ -12,8 +12,9 @@ there are no separate agent-specific rule files.
 | `home/` | chezmoi source directory. All managed config lives here. |
 | `.chezmoiroot` | Points chezmoi at `home/` as the source root. |
 | `home/.chezmoi.toml.tmpl` | Generates `~/.config/chezmoi/chezmoi.toml` (`machine`, `zshVariant`). |
-| `packages/` | Package lists per platform (consumed by install scripts). |
+| `packages/` | Package lists: `common.txt`, `debian.txt` (baseline), `mise.txt` (optional runtimes). |
 | `scripts/bootstrap.sh` | Fresh-machine bootstrap (git → clone → chezmoi/mise → hand off). |
+| `scripts/install-extras.sh` | Optional stacks (gcloud/docker/mise/prompt); the agent asks first. |
 | `scripts/doctor.sh <machine>` | Verification. Non-zero exit on any failure. |
 | `meta/` | Legacy Dotbot setup, being removed. **Do not extend it.** |
 
@@ -37,10 +38,15 @@ there are no separate agent-specific rule files.
 ## Procedure
 
 1. Read `machines/<name>.md`; detect arch/OS/shell/sudo.
-2. Install packages for that OS (apt + `mise` on Linux; Homebrew on macOS).
-3. `chezmoi apply` (edit sources in `home/`, never `~` directly).
-4. Run `scripts/doctor.sh <name>`; fix and repeat until it passes.
-5. Summarise changes and list manual steps (gcloud/gh/ssh auth).
+2. Install packages for that OS (`apt` + `mise` on Linux; Homebrew on macOS).
+3. `chezmoi apply` (edit sources in `home/`, never `~` directly). This also
+   installs the **baseline** packages from `packages/*.txt` via the
+   `run_onchange_` script.
+4. **Ask** which optional stacks the user wants (`scripts/install-extras.sh
+   --list`), then apply their choices with
+   `scripts/install-extras.sh <name> --with <stack,...>`.
+5. Run `scripts/doctor.sh <name>`; fix and repeat until it passes.
+6. Summarise changes and list manual steps (gcloud/gh/ssh auth).
 
 ## Platforms
 

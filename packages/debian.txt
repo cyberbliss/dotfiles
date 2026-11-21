@@ -1,0 +1,6 @@
+# Debian/apt-only baseline packages (names as they appear in apt).
+# Consumed by home/run_onchange_install-packages.sh.tmpl.
+zsh
+build-essential
+gcc
+coreutils

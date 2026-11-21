@@ -33,6 +33,18 @@ Last verified: 2026-11-21 on branch `agent-harness`.
 - Derive the apt codename dynamically (`$VERSION_CODENAME`) and arch
   (`dpkg --print-architecture`); do not hardcode `bookworm`/`arm64`.
 
+### Baseline vs optional
+- **Baseline** (installed automatically, non-interactive, by
+  `home/run_onchange_install-packages.sh.tmpl`): `packages/common.txt` +
+  `packages/debian.txt` via apt. All of these are in Debian trixie main, so no
+  third-party repo is needed. Idempotent — only missing packages are installed.
+- **Optional** (the agent must *ask* before installing; applied by
+  `scripts/install-extras.sh`): `gcloud`, `docker`, `mise` runtimes
+  (`packages/mise.txt`), and `prompt` (oh-my-posh + antidote). Run as
+  `scripts/install-extras.sh chromebook --with <stack,...>`. Re-runnable.
+- This machine's zsh variant is `simple`, so it does **not** need antidote /
+  oh-my-posh / brew; only offer `prompt` if the user asks.
+
 ## Quirks
 - **Clipboard / OSC 52:** the ChromeOS Terminal supports OSC 52, but the current
   `tmux-ubuntu.conf` has no `set-clipboard on` (only commented-out `xsel` bindings).
@@ -81,7 +93,7 @@ require_file ~/.bash_logout
 require_file ~/.gitconfig
 require_file ~/.zshrc
 require_file ~/.dir_colours
-warn_cmd tmux
+require_cmd tmux
 warn_file ~/.tmux.conf
 warn_tmux_clipboard ~/.tmux.conf
 warn_cmd gcloud

@@ -1,0 +1,16 @@
+# Language/runtime tools managed by mise.
+# OPTIONAL: offered by scripts/install-extras.sh (mise stack), never installed
+# as part of the baseline. One entry per line: <tool> or <tool>@<version>
+# (no version => latest).
+go
+go-task
+golangci-lint
+goreleaser
+helm
+helmfile
+terraform
+terraform-docs
+kubectl
+kubectx
+k9s
+vault

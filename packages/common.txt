@@ -1,0 +1,14 @@
+# Common baseline CLI tooling for every platform.
+# On Linux these are installed with apt by
+# home/run_onchange_install-packages.sh.tmpl; macOS gets them from Brewfile.
+# One package per line; blank lines and # comments are ignored.
+git
+curl
+ca-certificates
+jq
+tree
+make
+vim
+tmux
+shellcheck
+gh
