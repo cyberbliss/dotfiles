@@ -75,6 +75,9 @@ scripts/zsh-configure.sh --target fullfat --prompt omp \
   --features brew,plugins,gcloud,kubernetes
 ```
 
+Choosing `fullfat`/`omp`/`brew`/`plugins` on a machine without Homebrew is
+flagged (those modules no-op); pass `--force` to accept it anyway.
+
 ## Machines
 
 - `machines/chromebook.md` — ChromeOS Crostini: Debian 13 (trixie), arm64,

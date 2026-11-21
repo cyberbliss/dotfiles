@@ -51,6 +51,8 @@ there are no separate agent-specific rule files.
 5. **Walk the user through the zsh options** and record the choices with
    `scripts/zsh-configure.sh` (target type `lite` vs `fullfat`, prompt, modules;
    see the "zsh" notes in the machine file). The shared base applies regardless.
+   The script warns if a choice needs Homebrew (`fullfat`/`omp`/`brew`/`plugins`)
+   on a `brew=false` machine, and refuses unless `--force` is given.
 6. Run `scripts/doctor.sh <name>`; fix and repeat until it passes.
 7. Summarise changes and list manual steps (gcloud/gh/ssh auth).
 

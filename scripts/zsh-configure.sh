@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # zsh-configure.sh [--target lite|fullfat] [--prompt basic|omp]
-#                  [--features <a,b,...>] [--list]
+#                  [--features <a,b,...>] [--list] [--force]
 #
 # Records this machine's zsh options in home/.chezmoidata.toml (machine-keyed)
 # and applies them. Intended to be run by the agent, which should WALK THE USER
@@ -37,18 +37,20 @@ feature_desc() {
 tpl() { chezmoi execute-template "$1"; }
 
 machine="$(tpl '{{ .machine }}')"
+brew_data="$(tpl '{{ .brew }}')"
 default_target="$(tpl '{{ .defaultTargetType }}')"
 current_target="$(tpl '{{ with index .machines .machine }}{{ .targetType }}{{ end }}')"
 current_prompt="$(tpl '{{ with index .machines .machine }}{{ .zsh.prompt }}{{ end }}')"
 current_features="$(tpl '{{ with index .machines .machine }}{{ .zsh.features | join "," }}{{ end }}')"
 [[ -n $current_target ]] || current_target="$default_target"
 
-target=""; prompt=""; features=""; interactive=0
+target=""; prompt=""; features=""; interactive=0; FORCE=0
 while (($#)); do
   case "$1" in
     --target)   target="${2:-}"; shift 2 ;;
     --prompt)   prompt="${2:-}"; shift 2 ;;
     --features) features="${2:-}"; shift 2 ;;
+    --force)    FORCE=1; shift ;;
     --list)     printf 'target: %s (default %s)\n' "$current_target" "$default_target"
                 printf 'prompt: basic|omp\nfeatures: %s\n' "$(IFS=,; printf '%s' "${ALL_FEATURES[*]}")"; exit 0 ;;
     -h|--help)  sed -n '2,26p' "$0"; exit 0 ;;
@@ -102,6 +104,29 @@ fi
 [[ -n $prompt ]] || prompt="$rec_prompt"
 [[ -n $features ]] || features="$rec_feat"
 [[ "$prompt" == basic || "$prompt" == omp ]] || { printf 'zsh-configure: prompt must be basic|omp\n' >&2; exit 2; }
+
+# Coherence: fullfat / omp / brew / plugins only make sense where Homebrew exists.
+incoherent=""
+[[ $target == fullfat ]] && incoherent+="targetType=fullfat "
+[[ $prompt == omp ]] && incoherent+="prompt=omp "
+if [[ -n $features ]]; then
+  IFS=',' read -ra _inc <<< "$features"
+  for f in "${_inc[@]}"; do
+    case "$f" in brew|plugins) incoherent+="feature=$f " ;; esac
+  done
+fi
+if [[ -n $incoherent && $brew_data != true ]]; then
+  printf '\nWARNING: %sselected, but this machine has brew=false.\n' "$incoherent" >&2
+  printf '  Homebrew / oh-my-posh / antidote are unavailable, and the client assets\n' >&2
+  printf '  (zsh_plugins.txt, the omp theme) are not shipped -- those modules no-op.\n' >&2
+  if ((interactive)); then
+    read -r -p "Proceed anyway? [y/N] " _ok
+    [[ $_ok =~ ^[Yy]$ ]] || { printf 'zsh-configure: aborted\n' >&2; exit 1; }
+  elif ((!FORCE)); then
+    printf 'zsh-configure: refusing without --force\n' >&2
+    exit 3
+  fi
+fi
 
 # Build the TOML block.
 feature_toml=""
