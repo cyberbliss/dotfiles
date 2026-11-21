@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# Homebrew bundle (macOS or Linuxbrew) -- managed by chezmoi, edit home/, not ~.
+# Only meaningful on Homebrew/client machines; run_onchange_: re-runs only when
+# this script (including the Brewfile hash) changes.
+#
+# Brewfile hash: {{ if eq .chezmoi.os "darwin" }}{{ include "../Brewfile" | sha256sum }}{{ else }}{{ include "../Brewfile-ubuntu" | sha256sum }}{{ end }}
+set -euo pipefail
+
+{{ if not .brew -}}
+# Not a Homebrew machine; nothing to do.
+exit 0
+{{ else -}}
+
+log()  { printf '==> %s\n' "$*"; }
+warn() { printf '  ! %s\n' "$*" >&2; }
+
+{{ if eq .chezmoi.os "darwin" -}}
+BREW="/opt/homebrew/bin/brew"
+BREWFILE="{{ .chezmoi.sourceDir }}/../Brewfile"
+{{ else -}}
+BREW="/home/linuxbrew/.linuxbrew/bin/brew"
+BREWFILE="{{ .chezmoi.sourceDir }}/../Brewfile-ubuntu"
+{{ end -}}
+
+if [[ ! -x $BREW ]]; then
+  log "Homebrew not found at ${BREW}; installing non-interactively"
+  NONINTERACTIVE=1 /bin/bash -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+fi
+
+if [[ ! -x $BREW ]]; then
+  warn "Homebrew unavailable at ${BREW}; skipping bundle"
+  exit 0
+fi
+
+log "brew bundle --file ${BREWFILE}"
+"$BREW" bundle --file "$BREWFILE"
+{{ end -}}

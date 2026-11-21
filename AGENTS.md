@@ -16,6 +16,7 @@ there are no separate agent-specific rule files.
 | `scripts/bootstrap.sh` | Fresh-machine bootstrap (git → clone → chezmoi/mise → hand off). |
 | `scripts/install-extras.sh` | Optional stacks (gcloud/docker/mise/prompt); the agent asks first. |
 | `scripts/doctor.sh <machine>` | Verification. Non-zero exit on any failure. |
+| `scripts/render-matrix.sh` | Proves the OS/arch/machine template paths render (Stage 6). |
 | `meta/` | Legacy Dotbot setup, being removed. **Do not extend it.** |
 
 ## Golden rules

@@ -21,8 +21,9 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# chezmoi/mise live in ~/.local/bin (see machines/chromebook.md).
-export PATH="${HOME}/.local/bin:${PATH}"
+# chezmoi/mise live in ~/.local/bin; Linuxbrew machines use
+# /home/linuxbrew/.linuxbrew/bin (see machines/*.md).
+export PATH="${HOME}/.local/bin:/home/linuxbrew/.linuxbrew/bin:${PATH}"
 
 if [[ -t 1 ]]; then
   C_OK=$'\033[32m'; C_NO=$'\033[31m'; C_WARN=$'\033[33m'; C_OFF=$'\033[0m'
@@ -47,7 +48,9 @@ evaluate() { # <kind> <arg> -> 0 ok, 1 fail, 2 unknown
 
   case "$kind" in
     os)
-      if grep -q "^VERSION_CODENAME=${arg}$" /etc/os-release; then
+      # Match the Ubuntu base codename too: Linux Mint sets VERSION_CODENAME to
+      # the Mint release name (e.g. wilma) but UBUNTU_CODENAME to the base.
+      if grep -qE "^(VERSION|UBUNTU)_CODENAME=${arg}$" /etc/os-release; then
         MSG="os codename is ${arg}"
         return 0
       fi

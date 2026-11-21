@@ -30,6 +30,16 @@ STACKS=(gcloud docker mise prompt)
 log()  { printf '==> %s\n' "$*"; }
 warn() { printf '  ! %s\n' "$*" >&2; }
 
+# apt_codename: prefer the Ubuntu base codename, because Linux Mint sets
+# VERSION_CODENAME to the Mint release name (e.g. "wilma") while third-party apt
+# repos (docker, etc.) key on the Ubuntu base (e.g. "noble").
+apt_codename() {
+  local c
+  c="$(sed -n 's/^UBUNTU_CODENAME=//p' /etc/os-release)"
+  [[ -n $c ]] || c="$(sed -n 's/^VERSION_CODENAME=//p' /etc/os-release)"
+  printf '%s' "$c"
+}
+
 usage() {
   printf 'usage: %s [machine] [--with <%s>] [--list]\n' \
     "$(basename "$0")" "$(IFS=,; printf '%s' "${STACKS[*]}")"
@@ -75,7 +85,7 @@ do_gcloud() {
 do_docker() {
   local arch codename keyring list
   arch="$(dpkg --print-architecture)"
-  codename="$(sed -n 's/^VERSION_CODENAME=//p' /etc/os-release)"
+  codename="$(apt_codename)"
   keyring=/etc/apt/keyrings/docker.asc
   list=/etc/apt/sources.list.d/docker.list
 

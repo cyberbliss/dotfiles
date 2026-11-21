@@ -1,11 +1,13 @@
-{{- $map := dict "penguin" "chromebook" -}}
+{{- $map := dict "penguin" "chromebook" "steve" "mint" -}}
 {{- $machine := index $map .chezmoi.hostname -}}
 {{- if not $machine -}}{{- $machine = "unknown" -}}{{- end -}}
 {{- $variant := "client" -}}
 {{- if eq $machine "chromebook" -}}{{- $variant = "simple" -}}{{- end -}}
 {{- if eq $machine "rpi4" -}}{{- $variant = "rpi" -}}{{- end -}}
+{{- $brew := eq $variant "client" -}}
 sourceDir = {{ .chezmoi.workingTree | default .chezmoi.sourceDir | quote }}
 
 [data]
     machine = {{ $machine | quote }}
     zshVariant = {{ $variant | quote }}
+    brew = {{ $brew }}
