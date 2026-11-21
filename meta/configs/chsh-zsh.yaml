@@ -1,4 +1,0 @@
-- shell:
-    - command: sudo chsh -s $(which zsh) $(whoami)
-      stdout: true
-      stdin: true

@@ -1,7 +1,7 @@
-# Dotfile repo
+# Dotfiles
 
-Contains my profiles for installing and configuring Linux & Mac instances.  
-Based on this series of blog posts: <https://haseebmajid.dev/posts/2022-10-15-how-to-manage-your-dotfiles-with-dotbot/>
+Managed with **chezmoi** (source in `home/`) and driven by an agent — see
+`AGENTS.md` and `machines/<name>.md`. Previously managed with Dotbot, now retired.
 
 ## Pre-requisites
 
@@ -27,30 +27,46 @@ export PATH="$HOME/.opencode/bin:$PATH"
 Other installers (npm, bun, pnpm, mise) and standalone binaries are listed at
 <https://opencode.ai/docs/>. A working `git` and `curl` are assumed.
 
-## Usage
-`make install profile="<profile from meta/profiles>"`
+## Bootstrap a machine
 
-### Mac profiles
-Install brew before running dotbot:  
-`/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-
-If you get a permissions error try this:
-
-```
-sudo chown -R $(whoami) $(brew --prefix)/*
-/usr/local/bin/brew update --force --quiet
-brew doctor
+```bash
+git clone https://github.com/cyberbliss/dotfiles.git ~/dev_work/dotfiles
+~/dev_work/dotfiles/scripts/bootstrap.sh
 ```
 
-`gcloud` is installed as part of Brewfile, but it is not initialised. To do this, ensure you have already authenticated with your GCP account and execute `gcloud init`. The installation is minimal, use `gcloud components list` to see what components are installed.
+`bootstrap.sh` installs base tooling plus `chezmoi`/`mise`, then hands off to an
+agent. The agent follows `AGENTS.md`: `chezmoi apply` (managed config + baseline
+packages), **asks** which optional stacks you want, then runs `doctor.sh`.
 
-### Ubuntu Coder
-Use this one for the Linux VM spun up by Coder: `make install profile="ubuntu-coder"`  
+## Common tasks
 
-Installs: the basics using `apt`, Homebrew and sets the default shell to `zsh`. Once complete log out and back in again and then: `brew bundle -v`
+```bash
+make apply                       # chezmoi apply: config + baseline packages
+make doctor machine=chromebook   # verify a machine (non-zero exit on failure)
+make extras                      # list optional stacks (gcloud/docker/mise/prompt)
+make render-matrix               # prove per-machine template rendering
+```
 
-Tmux is also installed and configured. ESC is the prefix key. Copy and paste between local tmux and VM tmux is enabled as long as iterm2 is used AND local tmux `set-clipboard` is set to on.
+Edit configuration in `home/`, **never** in `$HOME` — chezmoi owns those files.
+For example the shell config lives in `home/.chezmoitemplates/zshrc-<variant>`
+(`zshrc-simple` on the chromebook, `zshrc-client` on Homebrew machines).
 
-## TODO
+## Machines
 
-- https://haseebmajid.dev/posts/2022-12-15-how-to-use-dotbot-to-personalise-your-vscode-devcontainers/
+- `machines/chromebook.md` — ChromeOS Crostini: Debian 13 (trixie), arm64,
+  `simple` zsh variant, apt only.
+- `machines/mint.md` — Linux Mint 22 (Ubuntu 24.04 / `noble`), amd64, `client`
+  zsh variant with linuxbrew.
+
+## Homebrew machines
+
+macOS, and Linuxbrew on amd64 Linux, install their tools from `Brewfile` /
+`Brewfile-ubuntu` via `home/run_onchange_install-brew.sh.tmpl`. Install Homebrew
+first if it is missing:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+`gcloud` comes from the `gcloud` optional stack (`scripts/install-extras.sh`),
+which pulls the Google apt repo; afterwards run `gcloud init` to authenticate.

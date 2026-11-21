@@ -57,12 +57,12 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   shells only. Non-login agent shells must reference these by absolute path.
 - **No X11 display server:** terminal-only tooling; avoid GUI/clipboard utilities
   that assume X.
-- **Dotbot cannot overwrite existing regular files:** the legacy `bash.yaml`
-  config links `~/.profile`, `~/.bashrc`, `~/.bash_logout`, but Crostini ships
-  these as regular files. With `force` unset, Dotbot warns and exits non-zero
-  (and `install-profile` uses `set -e`), aborting the run. The transitional
-  `chromebook` profile therefore omits `bash`; those files stay as shipped until
-  chezmoi takes over.
+- **Dotbot could not overwrite existing regular files:** the legacy `bash.yaml`
+  config linked `~/.profile`, `~/.bashrc`, `~/.bash_logout`, but Crostini ships
+  these as regular files. With `force` unset, Dotbot warned and exited non-zero
+  (and the legacy installer used `set -e`), aborting the run. The transitional
+  `chromebook` profile therefore omitted `bash`; those files stayed as shipped
+  until chezmoi took over (now the source of truth).
 
 ## Manual steps after bootstrap (cannot be automated / require secrets)
 - `gh auth login` (git credential helper depends on it; `~/.gitconfig` already
