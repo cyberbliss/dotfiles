@@ -22,8 +22,8 @@ bad() { printf '  FAIL  %s\n' "$*" >&2; fail=1; }
 
 # name | os | arch | machine | brew | defaultTarget | must-match (; sep) | must-not-match (; sep) | zsh marker | zsh forbid | extra override (optional JSON)
 ROWS=(
-  'chromebook|linux|arm64|chromebook|false|lite|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|parse_git_branch|oh-my-posh|'
-  'mint|linux|amd64|mint|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|oh-my-posh|parse_git_branch|'
+  'chromebook|linux|arm64|chromebook|false|lite|\.bashrc;^\.profile$|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|parse_git_branch|oh-my-posh|"machines":{"chromebook":{"targetType":"lite","zsh":{"prompt":"basic","features":[]}}}'
+  'mint|linux|amd64|mint|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json;^\.profile$|^a^z$|oh-my-posh|parse_git_branch|"machines":{"mint":{"targetType":"fullfat","zsh":{"prompt":"omp","features":["brew","plugins","gcloud","kubernetes"]}}}'
   'darwin-arm64(render-only)|darwin|arm64|mac|true|fullfat|\.zsh_plugins\.txt;stevejudd-full\.omp\.json|\.bashrc;\.bash_logout;^\.profile$|oh-my-posh|parse_git_branch|'
   'chromebook-omp(render-only, no brew)|linux|arm64|chromebook|false|lite|stevejudd-full\.omp\.json;\.zsh_plugins\.txt|^a^z$|oh-my-posh|parse_git_branch|"machines":{"chromebook":{"targetType":"fullfat","zsh":{"prompt":"omp","features":["plugins"]}}}'
 )

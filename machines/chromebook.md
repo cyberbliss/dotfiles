@@ -42,11 +42,13 @@ Last verified: 2026-11-21 on branch `agent-harness`.
   `scripts/install-extras.sh`): `gcloud`, `docker`, `mise` runtimes
   (`packages/mise.txt`), and `prompt` (oh-my-posh + antidote). Run as
   `scripts/install-extras.sh chromebook --with <stack,...>`. Re-runnable.
-- **zsh:** target type `lite` (`home/.chezmoidata.toml`) — base config plus the
-  basic git prompt; no heavy modules by default. Oh-my-posh/plugins **can** be
-  enabled here without Homebrew via `scripts/install-extras.sh chromebook --with
-  prompt` (arm64 binaries + Nerd Font under `~`), then
-  `scripts/zsh-configure.sh chromebook --prompt omp --features plugins`.
+- **zsh:** `lite` target with the **oh-my-posh prompt + `plugins`** enabled
+  (`home/.chezmoidata.toml`). Enabled without Homebrew via
+  `scripts/install-extras.sh chromebook --with prompt` (oh-my-posh + antidote +
+  Hack Nerd Font under `~`). The ChromeOS Terminal app cannot render the glyphs;
+  use a GUI terminal (e.g. `xfce4-terminal`, font `Hack Nerd Font Mono`) whose
+  font comes from the container. Revert with `scripts/zsh-configure.sh
+  chromebook --prompt basic --features ""`.
 
 ## Quirks
 - **Clipboard / OSC 52:** the ChromeOS Terminal supports OSC 52, but the current

@@ -1,23 +1,30 @@
 # Dotfiles
 
-Managed with **chezmoi** (source in `home/`) and driven by an agent — see
-`AGENTS.md` and `machines/<name>.md`. Previously managed with Dotbot, now retired.
+Agent-driven machine setup: this repo configures a machine end-to-end with
+**chezmoi**. You clone it, install OpenCode, open OpenCode **in the repo**, and
+ask it to configure your machine — the `configure-machine` skill
+(`.opencode/skills/configure-machine/`) is the entry point, and `AGENTS.md` is
+the agent's rulebook.
 
 ## Getting started
 
-`git` is the only prerequisite. Clone, run the prereqs script, then start the
-agent:
+`git` is the only prerequisite.
 
 ```bash
 git clone https://github.com/cyberbliss/dotfiles.git ~/dev_work/dotfiles
 ~/dev_work/dotfiles/scripts/prereqs.sh     # installs OpenCode + prints OpenRouter setup
-cd ~/dev_work/dotfiles && opencode         # the agent follows AGENTS.md
+cd ~/dev_work/dotfiles && opencode
 ```
 
-`scripts/prereqs.sh` installs OpenCode into `~/.opencode/bin`, adds it to your
-shell PATH (now and for future shells), and prints getting-started instructions.
-Everything after that is agent-driven: `chezmoi apply` (managed config + baseline
-packages), choose any optional stacks, then `scripts/doctor.sh <machine>`.
+Then just ask the agent, e.g.:
+
+> help me configure my laptop
+
+The agent will: identify the machine, run `scripts/bootstrap.sh` (installs
+chezmoi/mise + base tools), `chezmoi apply` (managed config + baseline packages),
+ask which **optional stacks** you want, walk you through the **zsh options**,
+and run `scripts/doctor.sh` until it passes. You can also invoke the skill
+explicitly with `@configure-machine`.
 
 ## OpenCode setup (reference)
 
@@ -43,18 +50,32 @@ opencode service set env OPENROUTER_API_KEY sk-or-...   # shared background serv
 Then choose a model, e.g. `openrouter/anthropic/claude-sonnet-5.5`. Other
 installers (npm, bun, pnpm, mise) are listed at <https://opencode.ai/docs/>.
 
-## Common tasks
+## What the agent uses
+
+| Script | Purpose |
+|---|---|
+| `scripts/bootstrap.sh` | Installs chezmoi/mise + base tools, clones if needed, `chezmoi init`. |
+| `scripts/install-extras.sh` | Optional stacks: `gcloud`, `docker`, `mise`, `prompt`. |
+| `scripts/zsh-configure.sh` | Records the machine's zsh target type + modules. |
+| `scripts/doctor.sh <machine>` | Verification (non-zero exit on failure). |
+| `scripts/render-matrix.sh` | Proves the per-machine template paths render. |
+
+Configuration is managed from **`home/`** (edit sources there, never `$HOME` —
+chezmoi owns those files). Per-machine facts live in `machines/<name>.md`;
+per-machine zsh choices in `home/.chezmoidata.toml`.
+
+## Manual / reference (optional)
+
+The same steps by hand, if you prefer. `make` targets are thin wrappers over the
+scripts above:
 
 ```bash
 make apply                       # chezmoi apply: config + baseline packages
-make doctor machine=chromebook   # verify a machine (non-zero exit on failure)
-make extras                      # list optional stacks (gcloud/docker/mise/prompt)
+make doctor machine=chromebook   # verify a machine
+make extras                      # list optional stacks
 make zsh                         # walk through zsh target type + modules
 make render-matrix               # prove per-machine template rendering
 ```
-
-Edit configuration in `home/`, **never** in `$HOME` — chezmoi owns those files.
-The shell config is a shared base plus per-machine prompt/modules; see below.
 
 ## Zsh configuration
 
@@ -66,27 +87,23 @@ optional **modules** are toggled per machine:
 - `fullfat` (dev workstation) → oh-my-posh prompt + `brew`, `plugins`, `gcloud`,
   `kubernetes`.
 
-Choices live in `home/.chezmoidata.toml` (machine-keyed). The agent walks you
-through them with `scripts/zsh-configure.sh`; you can also run it directly:
+Choices live in `home/.chezmoidata.toml` (machine-keyed) and the agent walks you
+through them with `scripts/zsh-configure.sh`:
 
 ```bash
-make zsh                                   # interactive walkthrough
-scripts/zsh-configure.sh --target fullfat --prompt omp \
-  --features brew,plugins,gcloud,kubernetes
+scripts/zsh-configure.sh chromebook            # interactive walkthrough
+scripts/zsh-configure.sh --prompt omp --features plugins
 ```
 
-The `omp` prompt and `plugins` modules work with **or without** Homebrew: on a
+The `omp` prompt and `plugins` module work with **or without** Homebrew: on a
 non-brew machine (e.g. arm64 Crostini) install the tooling with
-`scripts/install-extras.sh <machine> --with prompt` — that fetches the
-oh-my-posh binary, antidote and a Nerd Font under `~`. The script notes when the
-chosen modules' tooling is missing.
+`scripts/install-extras.sh <machine> --with prompt`.
 
 ## Machines
 
-- `machines/chromebook.md` — ChromeOS Crostini: Debian 13 (trixie), arm64,
-  `lite` (basic prompt), apt only.
-- `machines/mint.md` — Linux Mint 22 (Ubuntu 24.04 / `noble`), amd64, `fullfat`
-  (linuxbrew + oh-my-posh).
+- `machines/chromebook.md` — ChromeOS Crostini: Debian 13 (trixie), arm64, apt;
+  oh-my-posh prompt + plugins (Nerd Font rendered in a Crostini GUI terminal).
+- `machines/mint.md` — Linux Mint 22 (Ubuntu 24.04 / `noble`), amd64, linuxbrew.
 
 ## Homebrew machines
 
@@ -98,5 +115,4 @@ first if it is missing:
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-`gcloud` comes from the `gcloud` optional stack (`scripts/install-extras.sh`),
-which pulls the Google apt repo; afterwards run `gcloud init` to authenticate.
+`gcloud` comes from the `gcloud` optional stack; afterwards run `gcloud init`.
